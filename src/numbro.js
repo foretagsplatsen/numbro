@@ -25,8 +25,8 @@
 		if (numbro.isNumbro(input)) {
 			result = input.value();
 		} else if (typeof input === 'string') {
-			result = Numbro.prototype.unformat(input);
-		} else {
+			result = numbro.unformat(input);
+		} else if (isNaN(input) || typeof input !== 'number') {
 			result = NaN;
 		}
 
@@ -48,31 +48,31 @@
 
 	const formatter = require('./formatting');
 	const globalState = require('./globalState');
+	const validator = require('./validating');
 	const manipulate = require('./manipulating')(numbro);
+	const loader = require('./loading')(numbro);
+	const unformatter = require('./unformatting')(numbro);
 
 	Numbro.prototype = {
-		format: (format) => formatter.format(this, format),
-		formatCurrency: (format) => {
+		clone: function() { return numbro(this._value); },
+		format: function(format = {}) { return formatter.format(this, format); },
+		formatCurrency: function(format = {}) {
 			format.output = 'currency';
 			return formatter.format(this, format);
 		},
-		unformat: (format) => {
-			console.log('Not yet supported');
-			return '';
-		},
-		binaryByteUnits: () => formatter.getBinaryByteUnit(this),
-		decimalByteUnits: () => formatter.getDecimalByteUnit(this),
-		byteUnits: () => formatter.getByteUnit(this),
-		difference: (other) => {
+		binaryByteUnits: function() { return formatter.getBinaryByteUnit(this);},
+		decimalByteUnits: function() { return formatter.getDecimalByteUnit(this);},
+		byteUnits: function() { return formatter.getByteUnit(this);},
+		difference: function(other) {
 			return Math.abs(this.clone().subtract(other).value());
 		},
-		add: (other) => manipulate.add(this, other),
-		subtract: (other) => manipulate.subtract(this, other),
-		multiply: (other) => manipulate.multiply(this, other),
-		divide: (other) => manipulate.divide(this, other),
-		set: (input) => manipulate.set(this, normalizeInput(input)),
-		value: () => this._value,
-		valueOf: () => this._value,
+		add: function(other) { return manipulate.add(this, other) },
+		subtract: function(other) { return manipulate.subtract(this, other) },
+		multiply: function(other) { return manipulate.multiply(this, other) },
+		divide: function(other) { return manipulate.divide(this, other) },
+		set: function(input) { return manipulate.set(this, normalizeInput(input)) },
+		value: function() { return this._value },
+		valueOf: function() { return this._value }
 	};
 
 	//
@@ -81,16 +81,18 @@
 
 	numbro.language = globalState.currentLanguage;
 	numbro.languages = globalState.languages;
-	numbro.languageData = globalState.currentLanguage;
+	numbro.languageData = globalState.currentLanguageData;
+	numbro.setLanguage = globalState.setCurrentLanguage;
+	numbro.zeroFormat = globalState.setZeroFormat;
+	numbro.defaultFormat = globalState.currentDefaults;
+	numbro.defaultCurrencyFormat = globalState.currentCurrencyDefaults;
+	numbro.validate = validator.validate;
+	numbro.loadCulturesInNode = loader.loadCulturesInNode;
+	numbro.unformat = unformatter.unformat;
 
 	//
 	// Exposing Numbro
 	//
-
-	if (inNodejsRuntime()) {
-		//Todo: Rename the folder in 2.0.0
-		numbro.loadCulturesInNode();
-	}
 
 	// CommonJS module is defined
 	if (hasModule) {

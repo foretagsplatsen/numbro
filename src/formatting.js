@@ -14,7 +14,7 @@ const byteFormatOrder = [bytes.general, bytes.binary, bytes.decimal];
 /**
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
-function format(n, format) {
+function format(n, format = {}) {
 	let prefix = format.prefix || '';
 	let postfix = format.postfix || '';
 
@@ -43,17 +43,17 @@ function formatNumbro(n, format) {
 
 function getDecimalByteUnit(n) {
 	let data = bytes.decimal;
-	return getFormatByteUnits(n._value, data.suffixes, data.scale);
+	return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
 }
 
 function getBinaryByteUnit(n) {
 	let data = bytes.binary;
-	return getFormatByteUnits(n._value, data.suffixes, data.scale);
+	return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
 }
 
 function getByteUnit(n) {
 	let data = bytes.general;
-	return getFormatByteUnits(n._value, data.suffixes, data.scale);
+	return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
 }
 
 function getFormatByteUnits(value, suffixes, scale) {
