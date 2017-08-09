@@ -20,37 +20,37 @@ const bytes = {
 /**
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
-function format(n, format = {}) {
-    let valid = validating.validateFormat(format);
+function format(n, providedFormat = {}) {
+    let valid = validating.validateFormat(providedFormat);
 
     if (!valid) {
         return "ERROR: invalid format";
     }
 
-    let prefix = format.prefix || "";
-    let postfix = format.postfix || "";
+    let prefix = providedFormat.prefix || "";
+    let postfix = providedFormat.postfix || "";
 
-    let output = formatNumbro(n, format);
+    let output = formatNumbro(n, providedFormat);
     output = insertPrefix(output, prefix);
     output = insertPostfix(output, postfix);
     return output;
 }
 
-function formatNumbro(n, format) {
-    switch (format.output) {
+function formatNumbro(n, providedFormat) {
+    switch (providedFormat.output) {
         case "currency":
-            return formatCurrency(n, format, globalState);
+            return formatCurrency(n, providedFormat, globalState);
         case "percent":
-            return formatPercentage(n, format, globalState);
+            return formatPercentage(n, providedFormat, globalState);
         case "byte":
-            return formatByte(n, format, globalState);
+            return formatByte(n, providedFormat, globalState);
         case "time":
-            return formatTime(n, format, globalState);
+            return formatTime(n, providedFormat, globalState);
         case "ordinal":
-            return formatOrdinal(n, format, globalState);
+            return formatOrdinal(n, providedFormat, globalState);
         case "number":
         default:
-            return formatNumber(n, format, globalState);
+            return formatNumber(n, providedFormat, globalState);
     }
 }
 
@@ -70,16 +70,13 @@ function getByteUnit(n) {
 }
 
 function getFormatByteUnits(value, suffixes, scale) {
-    let suffix = suffixes[0],
-        power,
-        min,
-        max,
-        abs = Math.abs(value);
+    let suffix = suffixes[0];
+    let abs = Math.abs(value);
 
     if (abs >= scale) {
-        for (power = 1; power < suffixes.length; ++power) {
-            min = Math.pow(scale, power);
-            max = Math.pow(scale, power + 1);
+        for (let power = 1; power < suffixes.length; ++power) {
+            let min = Math.pow(scale, power);
+            let max = Math.pow(scale, power + 1);
 
             if (abs >= min && abs < max) {
                 suffix = suffixes[power];
@@ -98,45 +95,43 @@ function getFormatByteUnits(value, suffixes, scale) {
     return {value: value, suffix: suffix};
 }
 
-function formatByte(n, format, globalState) {
-    let base = format.base || "binary";
+function formatByte(n, providedFormat, state) {
+    let base = providedFormat.base || "binary";
     let baseInfo = bytes[base];
 
     let {value, suffix} = getFormatByteUnits(n._value, baseInfo.suffixes, baseInfo.scale);
-    let output = formatNumber({_value: value}, format, globalState, undefined, globalState.currentByteDefaults());
-    let abbreviations = globalState.currentAbbreviations();
+    let output = formatNumber({_value: value}, providedFormat, state, undefined, state.currentByteDefaults());
+    let abbreviations = state.currentAbbreviations();
     return `${output}${abbreviations.spaced ? " " : ""}${suffix}`;
 }
 
-function formatOrdinal(n, format, globalState) {
-    let ordinalFn = globalState.currentOrdinal();
-    let abbreviations = globalState.currentAbbreviations();
+function formatOrdinal(n, providedFormat, state) {
+    let ordinalFn = state.currentOrdinal();
+    let abbreviations = state.currentAbbreviations();
 
-    let output = formatNumber(n, format, globalState, undefined, globalState.currentOrdinalDefaults());
+    let output = formatNumber(n, providedFormat, state, undefined, state.currentOrdinalDefaults());
     let ordinal = ordinalFn(n._value);
 
     return `${output}${abbreviations.spaced ? " " : ""}${ordinal}`;
 }
 
 function formatTime(n) {
-    let hours = Math.floor(n._value / 60 / 60),
-        minutes = Math.floor((n._value - (hours * 60 * 60)) / 60),
-        seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
+    let hours = Math.floor(n._value / 60 / 60);
+    let minutes = Math.floor((n._value - (hours * 60 * 60)) / 60);
+    let seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
     return `${hours}:${(minutes < 10) ? "0" : ""}${minutes}:${(seconds < 10) ? "0" : ""}${seconds}`;
 }
 
-function formatPercentage(n, format, globalState) {
-    let output = formatNumber({_value: n._value * 100}, format, globalState, undefined, globalState.currentPercentageDefaults());
-    let abbreviations = globalState.currentAbbreviations();
+function formatPercentage(n, providedFormat, state) {
+    let output = formatNumber({_value: n._value * 100}, providedFormat, state, undefined, state.currentPercentageDefaults());
+    let abbreviations = state.currentAbbreviations();
     return `${output}${abbreviations.spaced ? " " : ""}%`;
 }
 
-function formatCurrency(n, format, globalState) {
-    const currentCurrency = globalState.currentCurrency();
+function formatCurrency(n, providedFormat, state) {
+    const currentCurrency = state.currentCurrency();
     let decimalSeparator = undefined;
     let space = "";
-
-    let output;
 
     if (currentCurrency.spaceSeparated) {
         space = " ";
@@ -146,7 +141,7 @@ function formatCurrency(n, format, globalState) {
         decimalSeparator = space + currentCurrency.symbol + space;
     }
 
-    output = formatNumber(n, format, globalState, decimalSeparator, globalState.currentCurrencyDefaults());
+    let output = formatNumber(n, providedFormat, state, decimalSeparator, state.currentCurrencyDefaults());
 
     if (currentCurrency.position === "prefix") {
         output = currentCurrency.symbol + space + output;
@@ -159,9 +154,9 @@ function formatCurrency(n, format, globalState) {
     return output;
 }
 
-function computeAverage(value, forceAverage, globalState) {
-    let abbreviations = globalState.currentAbbreviations();
-    let abbreviation;
+function computeAverage(value, forceAverage, state) {
+    let abbreviations = state.currentAbbreviations();
+    let abbreviation = "";
     let abs = Math.abs(value);
 
     if ((abs >= Math.pow(10, 12) && !forceAverage) || (forceAverage === "trillion")) {
@@ -199,9 +194,9 @@ function setMantissaPrecision(value, optionalMantissa, precision) {
         if (currentMantissa.length === 0) {
             if (optionalMantissa) {
                 return result;
-            } else {
-                result += ".";
             }
+
+            result += ".";
         }
 
         let missingZeros = precision - currentMantissa.length;
@@ -245,8 +240,8 @@ function indexesOfGroupSpaces(totalLength, groupSize) {
     return result;
 }
 
-function replaceDelimiters(output, thousandSeparated, globalState, decimalSeparator) {
-    let delimiters = globalState.currentDelimiters();
+function replaceDelimiters(output, thousandSeparated, state, decimalSeparator) {
+    let delimiters = state.currentDelimiters();
     let thousandSeparator = delimiters.thousands;
     decimalSeparator = decimalSeparator || delimiters.decimal;
     let thousandsSize = delimiters.thousandsSize || 3;
@@ -277,13 +272,13 @@ function insertAbbreviation(output, abbreviation) {
 function insertSign(output, value, negative) {
     if (value >= 0) {
         return `+${output}`;
-    } else {
-        if (negative === "sign") {
-            return output;
-        }
-
-        return `(${output.slice(1)})`;
     }
+
+    if (negative === "sign") {
+        return output;
+    }
+
+    return `(${output.slice(1)})`;
 }
 
 function insertPrefix(output, prefix) {
@@ -294,41 +289,42 @@ function insertPostfix(output, postfix) {
     return output + postfix;
 }
 
-function formatNumber(n, format, globalState, decimalSeparator, defaults) {
+function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
     let value = n._value;
-    let output;
 
-    if (value === 0 && globalState.hasZeroFormat()) {
-        return globalState.getZeroFormat();
+    if (value === 0 && state.hasZeroFormat()) {
+        return state.getZeroFormat();
     }
 
     if (!isFinite(value)) {
         return value.toString();
     }
 
-    defaults = defaults || globalState.currentDefaults();
+    defaults = defaults || state.currentDefaults();
 
-    let characteristicPrecision = format.characteristic || defaults.characteristic || 0;
-    let forceAverage = format.forceAverage || defaults.forceAverage || false; // 'trillion', 'billion', 'million' or 'thousand'
-    let average = format.average || defaults.average || !!forceAverage;
-    let mantissaPrecision = (format.mantissa !== undefined) ? format.mantissa : (average ? (defaults.mantissa || 0) : -1); // default when averaging is to chop off decimals
-    let optionalMantissa = format.optionalMantissa === undefined ? defaults.optionalMantissa !== false : format.optionalMantissa;
-    let thousandSeparated = format.thousandSeparated || defaults.thousandSeparated || false;
-    let negative = format.negative || defaults.negative || "sign"; // 'sign' or 'parenthesis'
-    let forceSign = format.forceSign || defaults.forceSign || false;
+    let characteristicPrecision = providedFormat.characteristic || defaults.characteristic || 0;
+    let forceAverage = providedFormat.forceAverage || defaults.forceAverage || false;
+    let average = providedFormat.average || defaults.average || !!forceAverage;
+
+    // default when averaging is to chop off decimals
+    let mantissaPrecision = (providedFormat.mantissa !== undefined) ? providedFormat.mantissa : (average ? (defaults.mantissa || 0) : -1);
+    let optionalMantissa = providedFormat.optionalMantissa === undefined ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa;
+    let thousandSeparated = providedFormat.thousandSeparated || defaults.thousandSeparated || false;
+    let negative = providedFormat.negative || defaults.negative || "sign";
+    let forceSign = providedFormat.forceSign || defaults.forceSign || false;
 
     let abbreviation = "";
 
     if (average) {
-        let data = computeAverage(value, forceAverage, globalState);
+        let data = computeAverage(value, forceAverage, state);
         value = data.value;
         abbreviation = data.abbreviation;
     }
 
     // Set mantissa precision
-    output = setMantissaPrecision(value, optionalMantissa, mantissaPrecision);
+    let output = setMantissaPrecision(value, optionalMantissa, mantissaPrecision);
     output = setCharacteristicPrecision(output, characteristicPrecision);
-    output = replaceDelimiters(output, thousandSeparated, globalState, decimalSeparator);
+    output = replaceDelimiters(output, thousandSeparated, state, decimalSeparator);
 
     if (average) {
         output = insertAbbreviation(output, abbreviation);

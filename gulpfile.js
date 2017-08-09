@@ -3,19 +3,22 @@ const del = require("del");
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
+const path = require("path");
+const fs = require("fs");
+// const reporters = require("jasmine-reporters");
 
 const plugins = require("gulp-load-plugins")();
 
 gulp.task("default", ["lint", "tests"]);
 
-gulp.task("js-lint", () => {
+gulp.task("lint", ["lint:js"]);
+
+gulp.task("lint:js", () => {
     return gulp.src(["./src/**/*.js", "./tests/**/*.js", "./languages/**/*.js"])
         .pipe(plugins.eslint())
-        .pipe(plugins.eslint.format())
+        .pipe(plugins.eslint.format("unix"))
         .pipe(plugins.eslint.failAfterError());
 });
-
-gulp.task("lint", ["js-lint"]);
 
 // Tests
 
@@ -28,7 +31,7 @@ gulp.task("pre-test", () => {
 gulp.task("tests", ["pre-test"], () => {
     return gulp.src("./tests/**/*.js")
         .pipe(plugins.jasmine({
-            reporter: new plugins.reporters.TerminalReporter()
+            reporter: new reporters.TerminalReporter()
         }))
         .pipe(plugins.istanbul.writeReports());
     // .pipe(plugins.istanbul.enforceThresholds({thresholds: {global: 90}}));
@@ -49,15 +52,9 @@ gulp.task("basic-coverage", () => {
 
 // Build
 
-gulp.task("babel", () =>
-    gulp.src("src/numbro.js")
-        .pipe(plugins.babel({
-            presets: ["env"]
-        }))
-        .pipe(gulp.dest("dist"))
-);
+gulp.task("build", ["build:src", "build:src:min", "build:languages", "build:all-languages"]);
 
-gulp.task("build", () => {
+gulp.task("build:src", () => {
     const babelify = require("babelify");
     // set up the browserify instance on a task basis
     let b = browserify({
@@ -70,12 +67,66 @@ gulp.task("build", () => {
     return b.bundle()
         .pipe(source("numbro.js"))
         .pipe(buffer())
+        // Add transformation tasks to the pipeline here.
+        .on("error", plugins.util.log)
+        .pipe(gulp.dest("./dist"));
+});
+
+gulp.task("build:src:min", () => {
+    const babelify = require("babelify");
+    // set up the browserify instance on a task basis
+    let b = browserify({
+        standalone: "numbro",
+        entries: "./src/numbro.js",
+        debug: true,
+        transform: [babelify]
+    });
+
+    return b.bundle()
+        .pipe(source("numbro.min.js"))
+        .pipe(buffer())
         .pipe(plugins.sourcemaps.init({loadMaps: true}))
         // Add transformation tasks to the pipeline here.
-        // .pipe(plugins.uglify())
+        .pipe(plugins.uglify())
         .on("error", plugins.util.log)
         .pipe(plugins.sourcemaps.write("./"))
         .pipe(gulp.dest("./dist"));
+});
+
+gulp.task("build:languages", () => {
+    const babelify = require("babelify");
+    return gulp.src("./languages/**/*.js")
+        .pipe(plugins.foreach((stream, file) => {
+            let fullName = file.history[0];
+            let extension = path.extname(fullName);
+            let baseName = path.basename(fullName, extension);
+
+            let b = browserify({
+                standalone: `numbro.${baseName}`,
+                entries: fullName,
+                debug: true,
+                transform: [babelify]
+            });
+
+            return b.bundle()
+                .pipe(source(`${baseName}.min${extension}`))
+                .pipe(buffer())
+                .pipe(plugins.sourcemaps.init({loadMaps: true}))
+                .pipe(plugins.uglify())
+                .on("error", plugins.util.log)
+                .pipe(plugins.sourcemaps.write("./"))
+                .pipe(gulp.dest("./dist/languages/"));
+        }));
+});
+
+gulp.task("build:all-languages", ["build:languages"], (cb) => {
+    let dir = "./dist";
+    fs.readdir(`${dir}/languages`, (_, files) => {
+        let langFiles = files
+            .filter(file => file.match(/\.js$/))
+            .map(file => `exports["${file.replace(".min.js", "")}"]=require("./languages/${file}");`).join("");
+        fs.writeFile(`${dir}/languages.min.js`, langFiles, cb);
+    });
 });
 
 // Bumping
@@ -123,7 +174,7 @@ gulp.task("release", () => {
             question: `Are you sure you want to publish a new release with version ${version}? (yes/no)`,
             input: "_key:y"
         }))
-        .pipe(plugins.git.tag(version, `Release version ${version}`, function(err) {
+        .pipe(plugins.git.tag(version, `Release version ${version}`, err => {
             if (err) {
                 throw err;
             }
@@ -132,8 +183,8 @@ gulp.task("release", () => {
 
 // Clean
 
-gulp.task("clean", (cb) => {
-    return del([
-        "dist",
-    ], cb);
+gulp.task("clean", ["clean:build"]);
+
+gulp.task("clean:build", (cb) => {
+    return del(["dist"], cb);
 });

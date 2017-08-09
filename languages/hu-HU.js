@@ -13,10 +13,10 @@ module.exports = {
         decimal: ","
     },
     abbreviations: {
-        thousand: "E",  // ezer
-        million: "M",   // millió
+        thousand: "E", // ezer
+        million: "M", // millió
         billion: "Mrd", // milliárd
-        trillion: "T"   // trillió
+        trillion: "T" // trillió
     },
     ordinal: function() {
         return ".";

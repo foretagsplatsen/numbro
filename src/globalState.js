@@ -87,9 +87,9 @@ state.setCurrentLanguage = (tag, fallbackTag = enUS.languageTag) => {
     let matchingLanguageTag = null;
     if (!languages[tagToUse]) {
         if (suffix) {
-            Object.keys(languages).forEach(tag => {
-                if (!matchingLanguageTag && tag.split("-")[0] === suffix) {
-                    matchingLanguageTag = tag;
+            Object.keys(languages).forEach(each => {
+                if (!matchingLanguageTag && each.split("-")[0] === suffix) {
+                    matchingLanguageTag = each;
                 }
             });
         }

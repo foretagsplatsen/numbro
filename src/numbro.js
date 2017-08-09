@@ -29,12 +29,11 @@ function normalizeInput(input) {
     return Number(result);
 }
 
-let numbro = function(input) {
+function numbro(input) {
     return new Numbro(normalizeInput(input));
-};
+}
 
 // version number
-// noinspection JSAnnotator
 numbro.version = VERSION;
 
 // compare numbro object

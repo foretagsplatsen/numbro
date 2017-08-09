@@ -9,7 +9,20 @@
 // Todo: implement
 // eslint-disable-next-line no-unused-vars
 function parseOutput(string, result) {
+    if (string.indexOf("$") !== -1) {
+        result.output = "currency";
+        return;
+    }
 
+    if (string.indexOf("%") !== -1) {
+        result.output = "percent";
+        return;
+    }
+
+    if (string.indexOf("%") !== -1) {
+        result.output = "percent";
+        return;
+    }
 }
 
 function parseFormat(string) {

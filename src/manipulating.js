@@ -21,8 +21,8 @@ function multiplier(x) {
 
 function correctionFactor(...args) {
     return args.reduce((prev, next) => {
-        let mp = multiplier(prev),
-            mn = multiplier(next);
+        let mp = multiplier(prev);
+        let mn = multiplier(next);
         return mp > mn ? mp : mn;
     }, -Infinity);
 }

@@ -80,9 +80,9 @@ const validFormat = {
  */
 function validate(input, format) {
     let validInput = validateInput(input);
-    let validFormat = validateFormat(format);
+    let isFormatValid = validateFormat(format);
 
-    return validInput && validFormat;
+    return validInput && isFormatValid;
 }
 
 // Todo: Implement

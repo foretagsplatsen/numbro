@@ -1,26 +1,26 @@
-const validating = require('../../src/validating');
+const validating = require("../../src/validating");
 
-let lastErrorMessage = '';
-let oldConsole;
+let lastErrorMessage = "";
+let oldConsole = undefined;
 
 exports.validating = {
 	setUp: (callback) => {
-		oldConsole = console.error;
+        oldConsole = console.error; // eslint-disable-line no-console
 
-		console.error = (message) => {
+        console.error = (message) => { // eslint-disable-line no-console
 			lastErrorMessage = message;
 		};
 
 		callback();
 	},
 	tearDown: (callback) => {
-		console.error = oldConsole;
+        console.error = oldConsole; // eslint-disable-line no-console
 		callback();
 	},
 	format: (test) => {
 		let validFormat = [
 			// format
-			{prefix: 'foo'},
+            {prefix: "foo"}
 		];
 
 		validFormat.forEach((format) => {
@@ -34,13 +34,13 @@ exports.validating = {
 				{
 					bar: 0
 				},
-				'[Validate format] Invalid key: bar'
+                "[Validate format] Invalid key: bar"
 			],
 			[
 				{
 					prefix: 2
 				},
-				'[Validate format] prefix type mismatched: "string" expected, "number" provided'
+                "[Validate format] prefix type mismatched: \"string\" expected, \"number\" provided"
 			]
 		];
 
