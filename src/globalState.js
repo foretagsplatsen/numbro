@@ -6,7 +6,7 @@
  * https://benjamin.vanryseghem.com
  */
 
-const enUS = require('./en-US');
+const enUS = require("./en-US");
 
 let state = {};
 
@@ -18,7 +18,7 @@ let currentLanguageTag = enUS.languageTag;
 let zeroFormat = null;
 
 function registerLanguage(data) {
-	languages[data.languageTag] = data;
+    languages[data.languageTag] = data;
 }
 
 state.chooseLanguage = (tag) => currentLanguageTag = tag;
@@ -50,60 +50,60 @@ state.currentCurrencyDefaults = () => state.currentLanguageData().currencyDefaul
 
 state.hasZeroFormat = () => zeroFormat !== null;
 state.getZeroFormat = () => zeroFormat;
-state.setZeroFormat = (format) => zeroFormat = typeof(format) === 'string' ? format : null;
+state.setZeroFormat = (format) => zeroFormat = typeof(format) === "string" ? format : null;
 
 //
 // Getters/Setters
 //
 
 function setLanguage(tag, data) {
-	if (tag !== data.languageTag) {
-		throw new Error(`Mismatch between the provided tag "${tag}" and the data language tag "${data.languageTag}"`);
-	}
+    if (tag !== data.languageTag) {
+        throw new Error(`Mismatch between the provided tag "${tag}" and the data language tag "${data.languageTag}"`);
+    }
 
-	registerLanguage(data);
-	state.chooseLanguage(tag);
+    registerLanguage(data);
+    state.chooseLanguage(tag);
 }
 
 state.currentLanguage = (tag, data) => {
-	if (!tag) {
-		return currentLanguageTag;
-	}
+    if (!tag) {
+        return currentLanguageTag;
+    }
 
-	if (tag && !data) {
-		if (!languages[tag]) {
-			throw new Error(`Unknown language tag: ${tag}`);
-		}
-		state.chooseLanguage(tag);
-	}
+    if (tag && !data) {
+        if (!languages[tag]) {
+            throw new Error(`Unknown language tag: ${tag}`);
+        }
+        state.chooseLanguage(tag);
+    }
 
-	setLanguage(tag, data);
-	return tag;
+    setLanguage(tag, data);
+    return tag;
 };
 
 state.setCurrentLanguage = (tag, fallbackTag = enUS.languageTag) => {
-	let tagToUse = tag;
-	let suffix = tag.split('-')[0];
-	let matchingLanguageTag = null;
-	if (!languages[tagToUse]) {
-		if (suffix) {
-			Object.keys(languages).forEach(function(tag) {
-				if (!matchingLanguageTag && tag.split('-')[0] === suffix) {
-					matchingLanguageTag = tag;
-				}
-			});
-		}
+    let tagToUse = tag;
+    let suffix = tag.split("-")[0];
+    let matchingLanguageTag = null;
+    if (!languages[tagToUse]) {
+        if (suffix) {
+            Object.keys(languages).forEach(tag => {
+                if (!matchingLanguageTag && tag.split("-")[0] === suffix) {
+                    matchingLanguageTag = tag;
+                }
+            });
+        }
 
-		if (languages[matchingLanguageTag]) {
-			tagToUse = matchingLanguageTag;
-		} else if (languages[fallbackTag]) {
-			tagToUse = fallbackTag;
-		} else {
-			tagToUse = enUS.languageTag;
-		}
-	}
+        if (languages[matchingLanguageTag]) {
+            tagToUse = matchingLanguageTag;
+        } else if (languages[fallbackTag]) {
+            tagToUse = fallbackTag;
+        } else {
+            tagToUse = enUS.languageTag;
+        }
+    }
 
-	state.chooseLanguage(tagToUse);
+    state.chooseLanguage(tagToUse);
 };
 
 module.exports = state;

@@ -6,18 +6,20 @@
  * https://benjamin.vanryseghem.com
  */
 
+// Todo: implement
+// eslint-disable-next-line no-unused-vars
 function parseOutput(string, result) {
 
 }
 
 function parseFormat(string) {
-	let result = {};
+    let result = {};
 
-	parseOutput(string, result);
+    parseOutput(string, result);
 
-	return result;
+    return result;
 }
 
 module.exports = {
-	parseFormat
+    parseFormat
 };
