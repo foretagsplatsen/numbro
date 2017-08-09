@@ -1,3 +1,11 @@
+/*!
+ * en-US.js
+ * version : 2.0.0
+ * author : Benjamin Van Ryseghem
+ * license : MIT
+ * https://benjamin.vanryseghem.com
+ */
+
 module.exports = {
 	languageTag: 'en-US',
 	delimiters: {

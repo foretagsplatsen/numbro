@@ -1,3 +1,11 @@
+/*!
+ * formatting.js
+ * version : 2.0.0
+ * author : Benjamin Van Ryseghem
+ * license : MIT
+ * https://benjamin.vanryseghem.com
+ */
+
 const globalState = require('./globalState');
 const validating = require('./validating');
 
