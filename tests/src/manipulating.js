@@ -1,6 +1,6 @@
 const numbro = require('../../src/numbro');
 
-exports.manipulate = {
+exports.manipulating = {
 	add: function(test) {
 		test.expect(4);
 

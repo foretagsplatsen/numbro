@@ -1,6 +1,6 @@
 const numbro = require('../../src/numbro');
 
-exports.misc = {
+exports.numbro = {
 
 	value: function(test) {
 		test.expect(5);
@@ -63,7 +63,7 @@ exports.misc = {
 
 		for (let i = 0; i < tests.length; i++) {
 			numbro.zeroFormat(tests[i][1]);
-			test.strictEqual(numbro(tests[i][0]).format('0'), tests[i][2], tests[i][1]);
+			test.strictEqual(numbro(tests[i][0]).format({}), tests[i][2], tests[i][1]);
 		}
 
 		test.done();

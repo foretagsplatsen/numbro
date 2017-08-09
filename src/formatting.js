@@ -1,4 +1,5 @@
 const globalState = require('./globalState');
+const validating = require('./validating');
 
 const binarySuffixes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 const decimalSuffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -15,6 +16,12 @@ const byteFormatOrder = [bytes.general, bytes.binary, bytes.decimal];
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
 function format(n, format = {}) {
+	let valid = validating.validateFormat(format);
+
+	if (!valid) {
+		return 'ERROR: invalid format';
+	}
+
 	let prefix = format.prefix || '';
 	let postfix = format.postfix || '';
 
@@ -36,6 +43,7 @@ function formatNumbro(n, format) {
 			return formatTime(n, format, globalState);
 		case 'ordinal':
 			return formatOrdinal(n, format, globalState);
+		case 'number':
 		default:
 			return formatNumber(n, format, globalState)
 	}
