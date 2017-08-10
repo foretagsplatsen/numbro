@@ -20,7 +20,7 @@ const bytes = {
 /**
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
-function format(n, providedFormat = {}) {
+function format(n, providedFormat = {}, numbro) {
     let valid = validating.validateFormat(providedFormat);
 
     if (!valid) {
@@ -36,21 +36,21 @@ function format(n, providedFormat = {}) {
     return output;
 }
 
-function formatNumbro(n, providedFormat) {
+function formatNumbro(n, providedFormat, numbro) {
     switch (providedFormat.output) {
         case "currency":
-            return formatCurrency(n, providedFormat, globalState);
+            return formatCurrency(n, providedFormat, globalState, numbro);
         case "percent":
-            return formatPercentage(n, providedFormat, globalState);
+            return formatPercentage(n, providedFormat, globalState, numbro);
         case "byte":
-            return formatByte(n, providedFormat, globalState);
+            return formatByte(n, providedFormat, globalState, numbro);
         case "time":
-            return formatTime(n, providedFormat, globalState);
+            return formatTime(n, providedFormat, globalState, numbro);
         case "ordinal":
-            return formatOrdinal(n, providedFormat, globalState);
+            return formatOrdinal(n, providedFormat, globalState, numbro);
         case "number":
         default:
-            return formatNumber(n, providedFormat, globalState);
+            return formatNumber(n, providedFormat, globalState, numbro);
     }
 }
 
@@ -92,15 +92,15 @@ function getFormatByteUnits(value, suffixes, scale) {
         }
     }
 
-    return {value: value, suffix: suffix};
+    return {value, suffix};
 }
 
-function formatByte(n, providedFormat, state) {
+function formatByte(n, providedFormat, state, numbro) {
     let base = providedFormat.base || "binary";
     let baseInfo = bytes[base];
 
     let {value, suffix} = getFormatByteUnits(n._value, baseInfo.suffixes, baseInfo.scale);
-    let output = formatNumber({_value: value}, providedFormat, state, undefined, state.currentByteDefaults());
+    let output = formatNumber(numbro(value), providedFormat, state, undefined, state.currentByteDefaults());
     let abbreviations = state.currentAbbreviations();
     return `${output}${abbreviations.spaced ? " " : ""}${suffix}`;
 }
@@ -122,8 +122,8 @@ function formatTime(n) {
     return `${hours}:${(minutes < 10) ? "0" : ""}${minutes}:${(seconds < 10) ? "0" : ""}${seconds}`;
 }
 
-function formatPercentage(n, providedFormat, state) {
-    let output = formatNumber({_value: n._value * 100}, providedFormat, state, undefined, state.currentPercentageDefaults());
+function formatPercentage(n, providedFormat, state, numbro) {
+    let output = formatNumber(numbro(n._value * 100), providedFormat, state, undefined, state.currentPercentageDefaults());
     let abbreviations = state.currentAbbreviations();
     return `${output}${abbreviations.spaced ? " " : ""}%`;
 }
@@ -337,16 +337,10 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
     return output;
 }
 
-module.exports = {
-    format,
-    getByteUnit,
-    getBinaryByteUnit,
-    getDecimalByteUnit,
-    __formatOrdinal: formatOrdinal,
-    __formatByte: formatByte,
-    __formatTime: formatTime,
-    __formatCurrency: formatCurrency,
-    __formatNumber: formatNumber,
-    __formatPercentage: formatPercentage,
-    __indexesOfGroupSpaces: indexesOfGroupSpaces
-};
+module.exports = (numbro) => ({
+    format: (...args) => format(...args, numbro),
+    getByteUnit: (...args) => getByteUnit(...args, numbro),
+    getBinaryByteUnit: (...args) => getBinaryByteUnit(...args, numbro),
+    getDecimalByteUnit: (...args) => getDecimalByteUnit(...args, numbro),
+    formatTime: (...args) => formatTime(...args, numbro)
+});

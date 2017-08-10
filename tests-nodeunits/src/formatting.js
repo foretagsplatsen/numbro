@@ -74,7 +74,7 @@ exports.formatting = {
 		];
 
 		data.forEach(([[n, format], expectedResult]) => {
-			let result = formatting.__formatTime({_value: n}, format, globalState);
+            let result = formatting.formatTime({_value: n}, format, globalState);
             test.strictEqual(result, expectedResult, `${n} formatted with ${JSON.stringify(format)} should be ${expectedResult}`);
 		});
 

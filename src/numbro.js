@@ -41,9 +41,9 @@ numbro.isNumbro = function(obj) {
     return obj instanceof Numbro;
 };
 
-const formatter = require("./formatting");
 const globalState = require("./globalState");
 const validator = require("./validating");
+const formatter = require("./formatting")(numbro);
 const manipulate = require("./manipulating")(numbro);
 const loader = require("./loading")(numbro);
 const unformatter = require("./unformatting")(numbro);
@@ -54,6 +54,10 @@ Numbro.prototype = {
     formatCurrency: function(format = {}) {
         format.output = "currency";
         return formatter.format(this, format);
+    },
+    formatTime: function(format = {}) {
+        format.output = "time";
+        return formatter.formatTime(this, format);
     },
     binaryByteUnits: function() { return formatter.getBinaryByteUnit(this);},
     decimalByteUnits: function() { return formatter.getDecimalByteUnit(this);},

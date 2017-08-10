@@ -5,9 +5,13 @@ const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
 const path = require("path");
 const fs = require("fs");
-// const reporters = require("jasmine-reporters");
+const reporters = require("jasmine-reporters");
 
-const plugins = require("gulp-load-plugins")();
+const plugins = require("gulp-load-plugins")({
+    rename: {
+        "gulp-jasmine-browser": "jasmineBrowser"
+    }
+});
 
 gulp.task("default", ["lint", "tests"]);
 

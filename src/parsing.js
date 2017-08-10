@@ -6,8 +6,6 @@
  * https://benjamin.vanryseghem.com
  */
 
-// Todo: implement
-// eslint-disable-next-line no-unused-vars
 function parseOutput(string, result) {
     if (string.indexOf("$") !== -1) {
         result.output = "currency";
@@ -19,15 +17,37 @@ function parseOutput(string, result) {
         return;
     }
 
-    if (string.indexOf("%") !== -1) {
-        result.output = "percent";
+    if (string.indexOf("bd") !== -1) {
+        result.output = "byte";
+        result.base = "general";
         return;
+    }
+
+    if (string.indexOf("b") !== -1) {
+        result.output = "byte";
+        result.base = "binary";
+        return;
+
+    }
+
+    if (string.indexOf("d") !== -1) {
+        result.output = "byte";
+        result.base = "decimal";
+        return;
+
+    }
+
+    if (string.indexOf(":") !== -1) {
+        result.output = "time";
+        return;
+    }
+
+    if (string.indexOf("o") !== -1) {
+        result.output = "ordinal";
     }
 }
 
-function parseFormat(string) {
-    let result = {};
-
+function parseFormat(string, result = {}) {
     parseOutput(string, result);
 
     return result;
