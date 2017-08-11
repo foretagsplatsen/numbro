@@ -112,7 +112,7 @@ function validateFormat(format) {
         }
 
         if (data.validValues && data.validValues.indexOf(value) === -1) {
-            console.error(`[Validate format] ${key} invalid value: must be among ${JSON.stringify(data.validValues)}, ${value} provided`); // eslint-disable-line no-console
+            console.error(`[Validate format] ${key} invalid value: must be among ${JSON.stringify(data.validValues)}, "${value}" provided`); // eslint-disable-line no-console
             return false;
         }
 
