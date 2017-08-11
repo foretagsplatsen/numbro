@@ -30,7 +30,7 @@ function format(n, providedFormat = {}, numbro) {
     let prefix = providedFormat.prefix || "";
     let postfix = providedFormat.postfix || "";
 
-    let output = formatNumbro(n, providedFormat);
+    let output = formatNumbro(n, providedFormat, numbro);
     output = insertPrefix(output, prefix);
     output = insertPostfix(output, postfix);
     return output;
@@ -178,13 +178,17 @@ function computeAverage(value, forceAverage, state) {
     }
 
     let optionalSpace = abbreviations.spaced ? " " : "";
-    abbreviation = optionalSpace + abbreviation;
+
+    if (abbreviation) {
+        abbreviation = optionalSpace + abbreviation;
+    }
+
     return {value, abbreviation};
 }
 
 function setMantissaPrecision(value, optionalMantissa, precision) {
     if (precision === -1) {
-        return value;
+        return value.toString();
     }
 
     let result = Math.floor(value * (Math.pow(10, precision))) / (Math.pow(10, precision));
@@ -193,7 +197,7 @@ function setMantissaPrecision(value, optionalMantissa, precision) {
     if (currentMantissa.length < precision) {
         if (currentMantissa.length === 0) {
             if (optionalMantissa) {
-                return result;
+                return result.toString();
             }
 
             result += ".";
@@ -205,7 +209,7 @@ function setMantissaPrecision(value, optionalMantissa, precision) {
         }
     }
 
-    return result;
+    return result.toString();
 }
 
 function setCharacteristicPrecision(value, precision) {
@@ -219,7 +223,7 @@ function setCharacteristicPrecision(value, precision) {
         }
     }
 
-    return result;
+    return result.toString();
 }
 
 /**
@@ -257,10 +261,10 @@ function replaceDelimiters(output, thousandSeparated, state, decimalSeparator) {
         });
     }
 
-    if (mantissa !== undefined) {
-        result = characteristic + decimalSeparator + mantissa;
-    } else {
+    if (!mantissa) {
         result = characteristic;
+    } else {
+        result = characteristic + decimalSeparator + mantissa;
     }
     return result;
 }

@@ -45,7 +45,7 @@ describe("formatting", () => {
             let providedFormat = jasmine.createSpy("providedFormat");
 
             formatting.format(instance, providedFormat);
-            expect(formatNumbro).toHaveBeenCalledWith(instance, providedFormat);
+            expect(formatNumbro).toHaveBeenCalledWith(instance, providedFormat, numbroStub);
         });
 
         it("inserts the prefix when the provided format is valid", () => {
@@ -632,12 +632,6 @@ describe("formatting", () => {
     });
 
     describe("formatTime", () => {
-        let formatTime = undefined;
-
-        beforeEach(() => {
-            formatTime = formattingModule.__get__("formatTime");
-        });
-
         it("convert seconds to time", () => {
             let data = [
                 // [value, result]
@@ -649,7 +643,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = formatTime(numbroStub(value));
+                let result = formatting.formatTime(numbroStub(value));
                 expect(result).toBe(expectedResult);
             });
         });
@@ -719,6 +713,384 @@ describe("formatting", () => {
         });
     });
 
+    describe("formatCurrency", () => {
+        let formatCurrency = undefined;
+        let formatNumber = undefined;
+        let revert = undefined;
+
+        beforeEach(() => {
+            formatCurrency = formattingModule.__get__("formatCurrency");
+            formatNumber = jasmine.createSpy("formatNumber");
+            revert = formattingModule.__set__({formatNumber});
+        });
+
+        afterEach(() => {
+            revert();
+        });
+
+        it("calls formatNumber with decimal separator when `infix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "infix",
+                symbol: "foo"
+            });
+            formatCurrency(instance, providedFormat, state);
+
+            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, state, "foo", state.currentCurrencyDefaults());
+        });
+
+        it("adds a space before and after the decimal separator when `infix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "infix",
+                spaceSeparated: true,
+                symbol: "foo"
+            });
+            formatCurrency(instance, providedFormat, state);
+
+            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, state, " foo ", state.currentCurrencyDefaults());
+        });
+
+        it("adds the currency symbol afterward when `prefix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "prefix",
+                spaceSeparated: false,
+                symbol: "foo"
+            });
+            formatNumber.and.returnValue("output");
+
+            let result = formatCurrency(instance, providedFormat, state);
+            expect(result).toBe("foooutput");
+        });
+
+        it("adds the currency symbol afterward with a space when `prefix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "prefix",
+                spaceSeparated: true,
+                symbol: "foo"
+            });
+            formatNumber.and.returnValue("output");
+
+            let result = formatCurrency(instance, providedFormat, state);
+            expect(result).toBe("foo output");
+        });
+
+        it("adds the currency symbol afterward when `postfix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "postfix",
+                spaceSeparated: false,
+                symbol: "foo"
+            });
+            formatNumber.and.returnValue("output");
+
+            let result = formatCurrency(instance, providedFormat, state);
+            expect(result).toBe("outputfoo");
+        });
+
+        it("adds the currency symbol afterward with a space when `postfix`", () => {
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = jasmine.createSpy("providedFormat");
+            let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
+            state.currentCurrency.and.returnValue({
+                position: "postfix",
+                spaceSeparated: true,
+                symbol: "foo"
+            });
+            formatNumber.and.returnValue("output");
+
+            let result = formatCurrency(instance, providedFormat, state);
+            expect(result).toBe("output foo");
+        });
+    });
+
+    describe("computeAverage", () => {
+        let computeAverage = undefined;
+
+        beforeEach(() => {
+            computeAverage = formattingModule.__get__("computeAverage");
+        });
+
+        it("computes the correct values when not forcing a precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [Math.pow(10, 0), {value: 1, abbreviation: ""}],
+                [Math.pow(10, 1), {value: 10, abbreviation: ""}],
+                [Math.pow(10, 2), {value: 100, abbreviation: ""}],
+                [Math.pow(10, 3), {value: 1, abbreviation: "K"}],
+                [Math.pow(10, 4), {value: 10, abbreviation: "K"}],
+                [Math.pow(10, 5), {value: 100, abbreviation: "K"}],
+                [Math.pow(10, 6), {value: 1, abbreviation: "M"}],
+                [Math.pow(10, 7), {value: 10, abbreviation: "M"}],
+                [Math.pow(10, 8), {value: 100, abbreviation: "M"}],
+                [Math.pow(10, 9), {value: 1, abbreviation: "B"}],
+                [Math.pow(10, 10), {value: 10, abbreviation: "B"}],
+                [Math.pow(10, 11), {value: 100, abbreviation: "B"}],
+                [Math.pow(10, 12), {value: 1, abbreviation: "T"}],
+                [Math.pow(10, 13), {value: 10, abbreviation: "T"}],
+                [Math.pow(10, 14), {value: 100, abbreviation: "T"}],
+                [Math.pow(10, 15), {value: 1000, abbreviation: "T"}],
+                [Math.pow(10, 16), {value: 10000, abbreviation: "T"}],
+                [Math.pow(10, 17), {value: 100000, abbreviation: "T"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, undefined, state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct abbreviations when space separating", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T",
+                spaced: true
+            });
+
+            let data = [
+                [Math.pow(10, 0), {value: 1, abbreviation: ""}],
+                [Math.pow(10, 1), {value: 10, abbreviation: ""}],
+                [Math.pow(10, 2), {value: 100, abbreviation: ""}],
+                [Math.pow(10, 3), {value: 1, abbreviation: " K"}],
+                [Math.pow(10, 4), {value: 10, abbreviation: " K"}],
+                [Math.pow(10, 5), {value: 100, abbreviation: " K"}],
+                [Math.pow(10, 6), {value: 1, abbreviation: " M"}],
+                [Math.pow(10, 7), {value: 10, abbreviation: " M"}],
+                [Math.pow(10, 8), {value: 100, abbreviation: " M"}],
+                [Math.pow(10, 9), {value: 1, abbreviation: " B"}],
+                [Math.pow(10, 10), {value: 10, abbreviation: " B"}],
+                [Math.pow(10, 11), {value: 100, abbreviation: " B"}],
+                [Math.pow(10, 12), {value: 1, abbreviation: " T"}],
+                [Math.pow(10, 13), {value: 10, abbreviation: " T"}],
+                [Math.pow(10, 14), {value: 100, abbreviation: " T"}],
+                [Math.pow(10, 15), {value: 1000, abbreviation: " T"}],
+                [Math.pow(10, 16), {value: 10000, abbreviation: " T"}],
+                [Math.pow(10, 17), {value: 100000, abbreviation: " T"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, undefined, state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct values when forcing a thousand precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [Math.pow(10, 0), {value: 0.001, abbreviation: "K"}],
+                [Math.pow(10, 1), {value: 0.01, abbreviation: "K"}],
+                [Math.pow(10, 2), {value: 0.1, abbreviation: "K"}],
+                [Math.pow(10, 3), {value: 1, abbreviation: "K"}],
+                [Math.pow(10, 4), {value: 10, abbreviation: "K"}],
+                [Math.pow(10, 5), {value: 100, abbreviation: "K"}],
+                [Math.pow(10, 6), {value: 1000, abbreviation: "K"}],
+                [Math.pow(10, 7), {value: 10000, abbreviation: "K"}],
+                [Math.pow(10, 8), {value: 100000, abbreviation: "K"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, "thousand", state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct values when forcing a million precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [Math.pow(10, 3), {value: 0.001, abbreviation: "M"}],
+                [Math.pow(10, 4), {value: 0.01, abbreviation: "M"}],
+                [Math.pow(10, 5), {value: 0.1, abbreviation: "M"}],
+                [Math.pow(10, 6), {value: 1, abbreviation: "M"}],
+                [Math.pow(10, 7), {value: 10, abbreviation: "M"}],
+                [Math.pow(10, 8), {value: 100, abbreviation: "M"}],
+                [Math.pow(10, 9), {value: 1000, abbreviation: "M"}],
+                [Math.pow(10, 10), {value: 10000, abbreviation: "M"}],
+                [Math.pow(10, 11), {value: 100000, abbreviation: "M"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, "million", state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct values when forcing a billion precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [Math.pow(10, 6), {value: 0.001, abbreviation: "B"}],
+                [Math.pow(10, 7), {value: 0.01, abbreviation: "B"}],
+                [Math.pow(10, 8), {value: 0.1, abbreviation: "B"}],
+                [Math.pow(10, 9), {value: 1, abbreviation: "B"}],
+                [Math.pow(10, 10), {value: 10, abbreviation: "B"}],
+                [Math.pow(10, 11), {value: 100, abbreviation: "B"}],
+                [Math.pow(10, 12), {value: 1000, abbreviation: "B"}],
+                [Math.pow(10, 13), {value: 10000, abbreviation: "B"}],
+                [Math.pow(10, 14), {value: 100000, abbreviation: "B"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, "billion", state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct values when forcing a trillion precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [Math.pow(10, 9), {value: 0.001, abbreviation: "T"}],
+                [Math.pow(10, 10), {value: 0.01, abbreviation: "T"}],
+                [Math.pow(10, 11), {value: 0.1, abbreviation: "T"}],
+                [Math.pow(10, 12), {value: 1, abbreviation: "T"}],
+                [Math.pow(10, 13), {value: 10, abbreviation: "T"}],
+                [Math.pow(10, 14), {value: 100, abbreviation: "T"}],
+                [Math.pow(10, 15), {value: 1000, abbreviation: "T"}],
+                [Math.pow(10, 16), {value: 10000, abbreviation: "T"}],
+                [Math.pow(10, 17), {value: 100000, abbreviation: "T"}]
+            ];
+
+            data.forEach(([value, expectedResult]) => {
+                let result = computeAverage(value, "trillion", state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+    });
+
+    describe("setMantissaPrecision", () => {
+        let setMantissaPrecision = undefined;
+
+        beforeEach(() => {
+            setMantissaPrecision = formattingModule.__get__("setMantissaPrecision");
+        });
+
+        it("returns the value if the precision is `-1`", () => {
+            let string = jasmine.createSpy("string");
+            let value = jasmine.createSpyObj("value", ["toString"]);
+            value.toString.and.returnValue(string);
+
+            let result = setMantissaPrecision(value, undefined, -1);
+
+            expect(result).toBe(string);
+        });
+
+        it("gives the correct mantissa length", () => {
+            let data = [
+                [12, 0, "12"],
+                [12, 1, "12.0"],
+                [12, 2, "12.00"],
+                [12, 3, "12.000"],
+                [12.345, 0, "12"],
+                [12.345, 1, "12.3"],
+                [12.345, 2, "12.34"],
+                [12.345, 3, "12.345"],
+                [12.345, 4, "12.3450"],
+                [12.345, 5, "12.34500"]
+            ];
+
+            data.forEach(([value, precision, expectedResult]) => {
+                let result = setMantissaPrecision(value, undefined, precision);
+                expect(result).toBe(expectedResult);
+            });
+        });
+
+        it("gives the correct mantissa length with optional matissa", () => {
+            let data = [
+                [12, 0, "12"],
+                [12, 1, "12"],
+                [12, 2, "12"],
+                [12, 3, "12"],
+                [12.345, 0, "12"],
+                [12.345, 1, "12.3"],
+                [12.345, 2, "12.34"],
+                [12.345, 3, "12.345"],
+                [12.345, 4, "12.3450"],
+                [12.345, 5, "12.34500"]
+            ];
+
+            data.forEach(([value, precision, expectedResult]) => {
+                let result = setMantissaPrecision(value, true, precision);
+                expect(result).toBe(expectedResult);
+            });
+        });
+    });
+
+    describe("setCharacteristicPrecision", () => {
+        let setCharacteristicPrecision = undefined;
+
+        beforeEach(() => {
+            setCharacteristicPrecision = formattingModule.__get__("setCharacteristicPrecision");
+        });
+
+        it("gives the correct characteristic length", () => {
+            let data = [
+                [12, 0, "12"],
+                [12, 1, "12"],
+                [12, 2, "12"],
+                [12, 3, "012"],
+                [12.345, 0, "12.345"],
+                [12.345, 1, "12.345"],
+                [12.345, 2, "12.345"],
+                [12.345, 3, "012.345"],
+                [12.345, 4, "0012.345"],
+                [12.345, 5, "00012.345"]
+            ];
+
+            data.forEach(([value, precision, expectedResult]) => {
+                let result = setCharacteristicPrecision(value, precision);
+                expect(result).toBe(expectedResult);
+            });
+        });
+    });
+
     describe("indexesOfGroupSpaces", () => {
         let indexesOfGroupSpaces = undefined;
 
@@ -761,5 +1133,335 @@ describe("formatting", () => {
                 expect(result).toEqual(expectedResult);
             });
         });
-    })
+    });
+
+    describe("replaceDelimiters", () => {
+        let replaceDelimiters = undefined;
+
+        beforeEach(() => {
+            replaceDelimiters = formattingModule.__get__("replaceDelimiters");
+        });
+
+        it("generates expected output", () => {
+            let state = jasmine.createSpyObj("state", ["currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({
+                thousands: ","
+            });
+
+            let data = [
+                ["12.00", {thousandSeparated: false}, "T", "12T00"],
+                ["12", {thousandSeparated: false}, "T", "12"],
+                ["123456.00", {thousandSeparated: false}, "T", "123456T00"],
+                ["123456789.00", {thousandSeparated: false}, "T", "123456789T00"],
+                ["123456.00", {thousandSeparated: true}, "T", "123,456T00"],
+                ["123456789.00", {thousandSeparated: true}, "T", "123,456,789T00"]
+            ];
+
+            data.forEach(([input, {thousandSeparated}, decimalSeparator, expectedValue]) => {
+                let result = replaceDelimiters(input, thousandSeparated, state, decimalSeparator);
+                expect(result).toBe(expectedValue);
+            });
+        });
+
+        it("allows custom thousand grouping", () => {
+            let state = jasmine.createSpyObj("state", ["currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({
+                thousands: ",",
+                thousandsSize: 2
+            });
+
+            let data = [
+                ["123456.00", {thousandSeparated: true}, "T", "12,34,56T00"],
+                ["123456789.00", {thousandSeparated: true}, "T", "1,23,45,67,89T00"]
+            ];
+
+            data.forEach(([input, {thousandSeparated}, decimalSeparator, expectedValue]) => {
+                let result = replaceDelimiters(input, thousandSeparated, state, decimalSeparator);
+                expect(result).toBe(expectedValue);
+            });
+        });
+
+        it("defaults to `decimal` if no decimalSeparator provided", () => {
+            let state = jasmine.createSpyObj("state", ["currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({
+                thousands: ",",
+                decimal: "W"
+            });
+
+            let data = [
+                ["12.00", "12W00"],
+                ["12", "12"]
+            ];
+
+            data.forEach(([input, expectedValue]) => {
+                let result = replaceDelimiters(input, false, state);
+                expect(result).toBe(expectedValue);
+            });
+        });
+    });
+
+    describe("insertAbbreviation", () => {
+        let insertAbbreviation = undefined;
+
+        beforeEach(() => {
+            insertAbbreviation = formattingModule.__get__("insertAbbreviation");
+        });
+
+        it("appends abbreviation at the end", () => {
+            let input = "foo";
+            let abbreviation = "bar";
+
+            let result = insertAbbreviation(input, abbreviation);
+            expect(result).toBe("foobar");
+        });
+    });
+
+    describe("insertSign", () => {
+        let insertSign = undefined;
+
+        beforeEach(() => {
+            insertSign = formattingModule.__get__("insertSign");
+        });
+
+        it("appends `+` to positive numbers", () => {
+            let result = insertSign("foo", 24);
+            expect(result).toBe("+foo");
+        });
+
+        it("appends `+` to 0", () => {
+            let result = insertSign("foo", 0);
+            expect(result).toBe("+foo");
+        });
+
+        // We assume the minus sign comes from the fact that the value is negative. Might be a bit too naïve.
+        it("does nothing to negative value with `sign` flag", () => {
+            let result = insertSign("foo", -4, "sign");
+            expect(result).toBe("foo");
+        });
+
+        // Remove first character assuming it's a `-`
+        it("add parenthesis to negative value with `parenthesis` flag", () => {
+            let result = insertSign("foo", -4, "parenthesis");
+            expect(result).toBe("(oo)");
+        });
+    });
+
+    describe("insertPrefix", () => {
+        let insertPrefix = undefined;
+
+        beforeEach(() => {
+            insertPrefix = formattingModule.__get__("insertPrefix");
+        });
+
+        it("appends prefix at the beginning", () => {
+            let input = "foo";
+            let prefix = "bar";
+
+            let result = insertPrefix(input, prefix);
+            expect(result).toBe("barfoo");
+        });
+    });
+
+    describe("insertPostfix", () => {
+        let insertPostfix = undefined;
+
+        beforeEach(() => {
+            insertPostfix = formattingModule.__get__("insertPostfix");
+        });
+
+        it("appends postfix at the end", () => {
+            let input = "foo";
+            let postfix = "bar";
+
+            let result = insertPostfix(input, postfix);
+            expect(result).toBe("foobar");
+        });
+
+    });
+
+    describe("formatNumber", () => {
+        let formatNumber = undefined;
+        let computeAverage = undefined;
+        let setMantissaPrecision = undefined;
+        let setCharacteristicPrecision = undefined;
+        let replaceDelimiters = undefined;
+        let insertAbbreviation = undefined;
+        let insertSign = undefined;
+        let revert = undefined;
+
+        beforeEach(() => {
+            computeAverage = jasmine.createSpy("computeAverage");
+            setMantissaPrecision = jasmine.createSpy("setMantissaPrecision");
+            setCharacteristicPrecision = jasmine.createSpy("setCharacteristicPrecision");
+            replaceDelimiters = jasmine.createSpy("replaceDelimiters");
+            insertAbbreviation = jasmine.createSpy("insertAbbreviation");
+            insertSign = jasmine.createSpy("insertSign");
+            formatNumber = formattingModule.__get__("formatNumber");
+            revert = formattingModule.__set__({
+                computeAverage,
+                setMantissaPrecision,
+                setCharacteristicPrecision,
+                replaceDelimiters,
+                insertAbbreviation,
+                insertSign
+            });
+
+            computeAverage.and.returnValue({});
+        });
+
+        afterEach(() => {
+            revert();
+        });
+
+        it("returns `zeroFormat` if existing when value is 0", () => {
+            let instance = numbroStub(0);
+
+            let zeroFormat = jasmine.createSpy("zeroFormat");
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "getZeroFormat"]);
+            state.hasZeroFormat.and.returnValue(true);
+            state.getZeroFormat.and.returnValue(zeroFormat);
+
+            let result = formatNumber(instance, format, state, undefined, defaults);
+            expect(result).toBe(zeroFormat);
+        });
+
+        it("returns `\"NaN\"` if the value is NaN", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat"]);
+
+            let result = formatNumber(numbroStub(NaN), format, state, undefined, defaults);
+            expect(result).toBe("NaN");
+
+            result = formatNumber(numbroStub(Infinity), format, state, undefined, defaults);
+            expect(result).toBe("Infinity");
+
+            result = formatNumber(numbroStub(-Infinity), format, state, undefined, defaults);
+            expect(result).toBe("-Infinity");
+        });
+
+        it("calls `computeAverage` and `insertAbbreviation` when the `average` flag is provided", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+            format.average = true;
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(computeAverage).toHaveBeenCalled();
+            expect(insertAbbreviation).toHaveBeenCalled();
+        });
+
+        it("doesn't call `computeAverage` when the `average` flag is not provided", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+            format.average = undefined;
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(computeAverage).not.toHaveBeenCalled();
+            expect(insertAbbreviation).not.toHaveBeenCalled();
+        });
+
+        it("set setMantissaPrecision according to `mantissa`", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+
+            format.mantissa = jasmine.createSpy("mantissa");
+            format.optionalMantissa = jasmine.createSpy("optionalMantissa");
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(setMantissaPrecision).toHaveBeenCalledWith(jasmine.anything(), format.optionalMantissa, format.mantissa);
+        });
+
+        it("set setCharacteristicPrecision according to `characteristic`", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+
+            format.characteristic = jasmine.createSpy("characteristic");
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(setCharacteristicPrecision.calls.argsFor(0)[1]).toBe(format.characteristic);
+        });
+
+        it("replaces the delimiters ", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+
+            format.thousandSeparated = jasmine.createSpy("thousandSeparated");
+            let decimalSeparator = jasmine.createSpy("characteristic");
+
+            formatNumber(numbroStub(1), format, state, decimalSeparator, defaults);
+
+            expect(replaceDelimiters.calls.argsFor(0)[1]).toBe(format.thousandSeparated);
+            expect(replaceDelimiters.calls.argsFor(0)[3]).toBe(decimalSeparator);
+        });
+
+        it("inserts the sign for negative values", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+
+            format.negative = jasmine.createSpy("negative");
+
+            formatNumber(numbroStub(-1), format, state, undefined, defaults);
+
+            expect(insertSign.calls.argsFor(0)[2]).toBe(format.negative);
+        });
+
+        it("doesn't insert the negative sign for positive value", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+
+            format.negative = jasmine.createSpy("negative");
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(insertSign).not.toHaveBeenCalled();
+        });
+
+        it("retrieves defaults from the state if none is provided", () => {
+            let format = jasmine.createSpy("format");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentDefaults"]);
+            state.currentDelimiters.and.returnValue({});
+            state.currentDefaults.and.returnValue({});
+
+            format.negative = jasmine.createSpy("negative");
+
+            formatNumber(numbroStub(1), format, state, undefined, undefined);
+
+            expect(state.currentDefaults).toHaveBeenCalled();
+        });
+
+        it("doesn't use state defaults when defaults are provided", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentDefaults"]);
+            state.currentDelimiters.and.returnValue({});
+            state.currentDefaults.and.returnValue({});
+
+            format.negative = jasmine.createSpy("negative");
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(state.currentDefaults).not.toHaveBeenCalled();
+        });
+
+    });
 });
