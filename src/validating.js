@@ -50,6 +50,11 @@ const validFormat = {
     average: {
         type: "boolean"
     },
+    totalLength: {
+        type: "number",
+        restriction: (number) => number >= 0,
+        message: "value must be positive"
+    },
     mantissa: {
         type: "number",
         restriction: (number) => number >= 0,
@@ -124,8 +129,15 @@ function validateFormat(format) {
     }, true);
 }
 
+// Todo: Implement
+// eslint-disable-next-line no-unused-vars
+function validateLanguage(data) {
+    return true;
+}
+
 module.exports = {
     validate,
     validateFormat,
-    validateInput
+    validateInput,
+    validateLanguage
 };

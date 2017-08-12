@@ -7,42 +7,40 @@
  */
 
 const enUS = require("./en-US");
+const validating = require("./validating");
 
 let state = {};
 
+let currentLanguageTag = undefined;
 let languages = {};
-
-registerLanguage(enUS);
-let currentLanguageTag = enUS.languageTag;
 
 let zeroFormat = null;
 
-function registerLanguage(data) {
-    languages[data.languageTag] = data;
-}
+function chooseLanguage(tag) { currentLanguageTag = tag; }
 
-state.chooseLanguage = (tag) => currentLanguageTag = tag;
+function currentLanguageData() { return languages[currentLanguageTag]; }
+
 state.languages = () => languages;
 
 //
 // Current language accessors
 //
 
-state.currentLanguageData = () => languages[currentLanguageTag];
-state.currentCurrency = () => state.currentLanguageData().currency || {};
-state.currentAbbreviations = () => state.currentLanguageData().abbreviations || {};
-state.currentDelimiters = () => state.currentLanguageData().delimiters || {};
-state.currentOrdinal = () => state.currentLanguageData().ordinal || {};
+state.currentLanguage = () => currentLanguageTag;
+state.currentCurrency = () => currentLanguageData().currency || {};
+state.currentAbbreviations = () => currentLanguageData().abbreviations || {};
+state.currentDelimiters = () => currentLanguageData().delimiters || {};
+state.currentOrdinal = () => currentLanguageData().ordinal || {};
 
 //
 // Defaults
 //
 
-state.currentDefaults = () => state.currentLanguageData().defaults || {};
-state.currentOrdinalDefaults = () => state.currentLanguageData().ordinalDefaults || state.currentDefaults();
-state.currentByteDefaults = () => state.currentLanguageData().byteDefaults || state.currentDefaults();
-state.currentPercentageDefaults = () => state.currentLanguageData().percentageDefaults || state.currentDefaults();
-state.currentCurrencyDefaults = () => state.currentLanguageData().currencyDefaults || state.currentDefaults();
+state.currentDefaults = () => currentLanguageData().defaults || {};
+state.currentOrdinalDefaults = () => currentLanguageData().ordinalDefaults || state.currentDefaults();
+state.currentByteDefaults = () => currentLanguageData().byteDefaults || state.currentDefaults();
+state.currentPercentageDefaults = () => currentLanguageData().percentageDefaults || state.currentDefaults();
+state.currentCurrencyDefaults = () => currentLanguageData().currencyDefaults || state.currentDefaults();
 
 //
 // Zero format
@@ -56,32 +54,30 @@ state.setZeroFormat = (format) => zeroFormat = typeof(format) === "string" ? for
 // Getters/Setters
 //
 
-function setLanguage(tag, data) {
-    if (tag !== data.languageTag) {
-        throw new Error(`Mismatch between the provided tag "${tag}" and the data language tag "${data.languageTag}"`);
-    }
-
-    registerLanguage(data);
-    state.chooseLanguage(tag);
-}
-
-state.currentLanguage = (tag, data) => {
-    if (!tag) {
-        return currentLanguageTag;
-    }
-
-    if (tag && !data) {
-        if (!languages[tag]) {
-            throw new Error(`Unknown language tag: ${tag}`);
+state.languageData = (tag) => {
+    if (tag) {
+        if (languages[tag]) {
+            return languages[tag];
         }
-        state.chooseLanguage(tag);
+        throw new Error(`Unknown tag "${tag}"`);
     }
 
-    setLanguage(tag, data);
-    return tag;
+    return currentLanguageData();
 };
 
-state.setCurrentLanguage = (tag, fallbackTag = enUS.languageTag) => {
+state.registerLanguage = (data, useLanguage = false) => {
+    if (!validating.validateLanguage(data)) {
+        throw new Error("Invalid language data");
+    }
+
+    languages[data.languageTag] = data;
+
+    if (useLanguage) {
+        chooseLanguage(data.languageTag);
+    }
+};
+
+state.setLanguage = (tag, fallbackTag = enUS.languageTag) => {
     let tagToUse = tag;
     let suffix = tag.split("-")[0];
     let matchingLanguageTag = null;
@@ -103,7 +99,10 @@ state.setCurrentLanguage = (tag, fallbackTag = enUS.languageTag) => {
         }
     }
 
-    state.chooseLanguage(tagToUse);
+    chooseLanguage(tagToUse);
 };
+
+state.registerLanguage(enUS);
+currentLanguageTag = enUS.languageTag;
 
 module.exports = state;

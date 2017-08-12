@@ -67,7 +67,8 @@ describe("validatingSpec", () => {
             let data = [
                 // format
                 {prefix: "foo"},
-                {mantissa: 3}
+                {mantissa: 3},
+                {totalLength: 3}
             ];
 
             data.forEach((format) => {
@@ -101,6 +102,11 @@ describe("validatingSpec", () => {
                         mantissa: -2
                     },
                     "[Validate format] mantissa invalid value: value must be positive"
+                ], [
+                    {
+                        totalLength: -2
+                    },
+                    "[Validate format] totalLength invalid value: value must be positive"
                 ],
                 [
                     {

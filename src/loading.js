@@ -8,10 +8,10 @@
 
 // Todo: implement
 // eslint-disable-next-line no-unused-vars
-function loadCulturesInNode(numbro) {
+function loadLanguagesInNode(numbro) {
     return true;
 }
 
 module.exports = (numbro) => ({
-    loadCulturesInNode: () => loadCulturesInNode(numbro)
+    loadLanguagesInNode: () => loadLanguagesInNode(numbro)
 });

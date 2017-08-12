@@ -154,10 +154,11 @@ function formatCurrency(n, providedFormat, state) {
     return output;
 }
 
-function computeAverage(value, forceAverage, state) {
+function computeAverage(value, forceAverage, state, totalLength) {
     let abbreviations = state.currentAbbreviations();
     let abbreviation = "";
     let abs = Math.abs(value);
+    let mantissaPrecision = -1;
 
     if ((abs >= Math.pow(10, 12) && !forceAverage) || (forceAverage === "trillion")) {
         // trillion
@@ -183,7 +184,12 @@ function computeAverage(value, forceAverage, state) {
         abbreviation = optionalSpace + abbreviation;
     }
 
-    return {value, abbreviation};
+    if (totalLength) {
+        let characteristic = value.toString().split(".")[0];
+        mantissaPrecision = Math.max(totalLength - characteristic.length, 0);
+    }
+
+    return {value, abbreviation, mantissaPrecision};
 }
 
 function setMantissaPrecision(value, optionalMantissa, precision) {
@@ -306,13 +312,14 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
 
     defaults = defaults || state.currentDefaults();
 
-    let characteristicPrecision = providedFormat.characteristic || defaults.characteristic || 0;
+    let totalLength = providedFormat.totalLength || defaults.characteristic || 0;
+    let characteristicPrecision = totalLength ? 0 : (providedFormat.characteristic || defaults.characteristic || 0);
     let forceAverage = providedFormat.forceAverage || defaults.forceAverage || false;
-    let average = providedFormat.average || defaults.average || !!forceAverage;
+    let average = totalLength ? true : (providedFormat.average || defaults.average || !!forceAverage);
 
     // default when averaging is to chop off decimals
-    let mantissaPrecision = (providedFormat.mantissa !== undefined) ? providedFormat.mantissa : (average ? (defaults.mantissa || 0) : -1);
-    let optionalMantissa = providedFormat.optionalMantissa === undefined ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa;
+    let mantissaPrecision = totalLength ? -1 : ((providedFormat.mantissa !== undefined) ? providedFormat.mantissa : (average ? (defaults.mantissa || 0) : -1));
+    let optionalMantissa = totalLength ? false : (providedFormat.optionalMantissa === undefined ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa);
     let thousandSeparated = providedFormat.thousandSeparated || defaults.thousandSeparated || false;
     let negative = providedFormat.negative || defaults.negative || "sign";
     let forceSign = providedFormat.forceSign || defaults.forceSign || false;
@@ -320,14 +327,17 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
     let abbreviation = "";
 
     if (average) {
-        let data = computeAverage(value, forceAverage, state);
+        let data = computeAverage(value, forceAverage, state, totalLength);
         value = data.value;
         abbreviation = data.abbreviation;
+        if (totalLength) {
+            mantissaPrecision = data.mantissaPrecision;
+        }
     }
 
     // Set mantissa precision
-    let output = setMantissaPrecision(value, optionalMantissa, mantissaPrecision);
-    output = setCharacteristicPrecision(output, characteristicPrecision);
+    let output = setCharacteristicPrecision(value, characteristicPrecision);
+    output = setMantissaPrecision(output, optionalMantissa, mantissaPrecision);
     output = replaceDelimiters(output, thousandSeparated, state, decimalSeparator);
 
     if (average) {

@@ -29,6 +29,7 @@ module.exports = {
         code: "USD"
     },
     defaults: {
+        thousandSeparated: true,
         currencyFormat: ",4 a"
     },
     formats: {

@@ -79,14 +79,15 @@ Numbro.prototype = {
 //
 
 numbro.language = globalState.currentLanguage;
+numbro.registerLanguage = globalState.registerLanguage;
+numbro.setLanguage = globalState.setLanguage;
 numbro.languages = globalState.languages;
-numbro.languageData = globalState.currentLanguageData;
-numbro.setLanguage = globalState.setCurrentLanguage;
+numbro.languageData = globalState.languageData;
 numbro.zeroFormat = globalState.setZeroFormat;
 numbro.defaultFormat = globalState.currentDefaults;
 numbro.defaultCurrencyFormat = globalState.currentCurrencyDefaults;
 numbro.validate = validator.validate;
-numbro.loadCulturesInNode = loader.loadCulturesInNode;
+numbro.loadLanguagesInNode = loader.loadLanguagesInNode;
 numbro.unformat = unformatter.unformat;
 
 module.exports = numbro;

@@ -833,24 +833,150 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 0), {value: 1, abbreviation: ""}],
-                [Math.pow(10, 1), {value: 10, abbreviation: ""}],
-                [Math.pow(10, 2), {value: 100, abbreviation: ""}],
-                [Math.pow(10, 3), {value: 1, abbreviation: "K"}],
-                [Math.pow(10, 4), {value: 10, abbreviation: "K"}],
-                [Math.pow(10, 5), {value: 100, abbreviation: "K"}],
-                [Math.pow(10, 6), {value: 1, abbreviation: "M"}],
-                [Math.pow(10, 7), {value: 10, abbreviation: "M"}],
-                [Math.pow(10, 8), {value: 100, abbreviation: "M"}],
-                [Math.pow(10, 9), {value: 1, abbreviation: "B"}],
-                [Math.pow(10, 10), {value: 10, abbreviation: "B"}],
-                [Math.pow(10, 11), {value: 100, abbreviation: "B"}],
-                [Math.pow(10, 12), {value: 1, abbreviation: "T"}],
-                [Math.pow(10, 13), {value: 10, abbreviation: "T"}],
-                [Math.pow(10, 14), {value: 100, abbreviation: "T"}],
-                [Math.pow(10, 15), {value: 1000, abbreviation: "T"}],
-                [Math.pow(10, 16), {value: 10000, abbreviation: "T"}],
-                [Math.pow(10, 17), {value: 100000, abbreviation: "T"}]
+                [
+                    Math.pow(10, 0),
+                    {
+                        value: 1,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 1),
+                    {
+                        value: 10,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 2),
+                    {
+                        value: 100,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 3),
+                    {
+                        value: 1,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 4),
+                    {
+                        value: 10,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 5),
+                    {
+                        value: 100,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 6),
+                    {
+                        value: 1,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 7),
+                    {
+                        value: 10,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 8),
+                    {
+                        value: 100,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 9),
+                    {
+                        value: 1,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 10),
+                    {
+                        value: 10,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 11),
+                    {
+                        value: 100,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 12),
+                    {
+                        value: 1,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 13),
+                    {
+                        value: 10,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 14),
+                    {
+                        value: 100,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 15),
+                    {
+                        value: 1000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 16),
+                    {
+                        value: 10000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 17),
+                    {
+                        value: 100000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
@@ -870,24 +996,150 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 0), {value: 1, abbreviation: ""}],
-                [Math.pow(10, 1), {value: 10, abbreviation: ""}],
-                [Math.pow(10, 2), {value: 100, abbreviation: ""}],
-                [Math.pow(10, 3), {value: 1, abbreviation: " K"}],
-                [Math.pow(10, 4), {value: 10, abbreviation: " K"}],
-                [Math.pow(10, 5), {value: 100, abbreviation: " K"}],
-                [Math.pow(10, 6), {value: 1, abbreviation: " M"}],
-                [Math.pow(10, 7), {value: 10, abbreviation: " M"}],
-                [Math.pow(10, 8), {value: 100, abbreviation: " M"}],
-                [Math.pow(10, 9), {value: 1, abbreviation: " B"}],
-                [Math.pow(10, 10), {value: 10, abbreviation: " B"}],
-                [Math.pow(10, 11), {value: 100, abbreviation: " B"}],
-                [Math.pow(10, 12), {value: 1, abbreviation: " T"}],
-                [Math.pow(10, 13), {value: 10, abbreviation: " T"}],
-                [Math.pow(10, 14), {value: 100, abbreviation: " T"}],
-                [Math.pow(10, 15), {value: 1000, abbreviation: " T"}],
-                [Math.pow(10, 16), {value: 10000, abbreviation: " T"}],
-                [Math.pow(10, 17), {value: 100000, abbreviation: " T"}]
+                [
+                    Math.pow(10, 0),
+                    {
+                        value: 1,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 1),
+                    {
+                        value: 10,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 2),
+                    {
+                        value: 100,
+                        abbreviation: "",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 3),
+                    {
+                        value: 1,
+                        abbreviation: " K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 4),
+                    {
+                        value: 10,
+                        abbreviation: " K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 5),
+                    {
+                        value: 100,
+                        abbreviation: " K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 6),
+                    {
+                        value: 1,
+                        abbreviation: " M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 7),
+                    {
+                        value: 10,
+                        abbreviation: " M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 8),
+                    {
+                        value: 100,
+                        abbreviation: " M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 9),
+                    {
+                        value: 1,
+                        abbreviation: " B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 10),
+                    {
+                        value: 10,
+                        abbreviation: " B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 11),
+                    {
+                        value: 100,
+                        abbreviation: " B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 12),
+                    {
+                        value: 1,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 13),
+                    {
+                        value: 10,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 14),
+                    {
+                        value: 100,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 15),
+                    {
+                        value: 1000,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 16),
+                    {
+                        value: 10000,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 17),
+                    {
+                        value: 100000,
+                        abbreviation: " T",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
@@ -906,15 +1158,78 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 0), {value: 0.001, abbreviation: "K"}],
-                [Math.pow(10, 1), {value: 0.01, abbreviation: "K"}],
-                [Math.pow(10, 2), {value: 0.1, abbreviation: "K"}],
-                [Math.pow(10, 3), {value: 1, abbreviation: "K"}],
-                [Math.pow(10, 4), {value: 10, abbreviation: "K"}],
-                [Math.pow(10, 5), {value: 100, abbreviation: "K"}],
-                [Math.pow(10, 6), {value: 1000, abbreviation: "K"}],
-                [Math.pow(10, 7), {value: 10000, abbreviation: "K"}],
-                [Math.pow(10, 8), {value: 100000, abbreviation: "K"}]
+                [
+                    Math.pow(10, 0),
+                    {
+                        value: 0.001,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 1),
+                    {
+                        value: 0.01,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 2),
+                    {
+                        value: 0.1,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 3),
+                    {
+                        value: 1,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 4),
+                    {
+                        value: 10,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 5),
+                    {
+                        value: 100,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 6),
+                    {
+                        value: 1000,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 7),
+                    {
+                        value: 10000,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 8),
+                    {
+                        value: 100000,
+                        abbreviation: "K",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
@@ -933,15 +1248,78 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 3), {value: 0.001, abbreviation: "M"}],
-                [Math.pow(10, 4), {value: 0.01, abbreviation: "M"}],
-                [Math.pow(10, 5), {value: 0.1, abbreviation: "M"}],
-                [Math.pow(10, 6), {value: 1, abbreviation: "M"}],
-                [Math.pow(10, 7), {value: 10, abbreviation: "M"}],
-                [Math.pow(10, 8), {value: 100, abbreviation: "M"}],
-                [Math.pow(10, 9), {value: 1000, abbreviation: "M"}],
-                [Math.pow(10, 10), {value: 10000, abbreviation: "M"}],
-                [Math.pow(10, 11), {value: 100000, abbreviation: "M"}]
+                [
+                    Math.pow(10, 3),
+                    {
+                        value: 0.001,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 4),
+                    {
+                        value: 0.01,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 5),
+                    {
+                        value: 0.1,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 6),
+                    {
+                        value: 1,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 7),
+                    {
+                        value: 10,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 8),
+                    {
+                        value: 100,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 9),
+                    {
+                        value: 1000,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 10),
+                    {
+                        value: 10000,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 11),
+                    {
+                        value: 100000,
+                        abbreviation: "M",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
@@ -960,15 +1338,78 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 6), {value: 0.001, abbreviation: "B"}],
-                [Math.pow(10, 7), {value: 0.01, abbreviation: "B"}],
-                [Math.pow(10, 8), {value: 0.1, abbreviation: "B"}],
-                [Math.pow(10, 9), {value: 1, abbreviation: "B"}],
-                [Math.pow(10, 10), {value: 10, abbreviation: "B"}],
-                [Math.pow(10, 11), {value: 100, abbreviation: "B"}],
-                [Math.pow(10, 12), {value: 1000, abbreviation: "B"}],
-                [Math.pow(10, 13), {value: 10000, abbreviation: "B"}],
-                [Math.pow(10, 14), {value: 100000, abbreviation: "B"}]
+                [
+                    Math.pow(10, 6),
+                    {
+                        value: 0.001,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 7),
+                    {
+                        value: 0.01,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 8),
+                    {
+                        value: 0.1,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 9),
+                    {
+                        value: 1,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 10),
+                    {
+                        value: 10,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 11),
+                    {
+                        value: 100,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 12),
+                    {
+                        value: 1000,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 13),
+                    {
+                        value: 10000,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 14),
+                    {
+                        value: 100000,
+                        abbreviation: "B",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
@@ -987,19 +1428,172 @@ describe("formatting", () => {
             });
 
             let data = [
-                [Math.pow(10, 9), {value: 0.001, abbreviation: "T"}],
-                [Math.pow(10, 10), {value: 0.01, abbreviation: "T"}],
-                [Math.pow(10, 11), {value: 0.1, abbreviation: "T"}],
-                [Math.pow(10, 12), {value: 1, abbreviation: "T"}],
-                [Math.pow(10, 13), {value: 10, abbreviation: "T"}],
-                [Math.pow(10, 14), {value: 100, abbreviation: "T"}],
-                [Math.pow(10, 15), {value: 1000, abbreviation: "T"}],
-                [Math.pow(10, 16), {value: 10000, abbreviation: "T"}],
-                [Math.pow(10, 17), {value: 100000, abbreviation: "T"}]
+                [
+                    Math.pow(10, 9),
+                    {
+                        value: 0.001,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 10),
+                    {
+                        value: 0.01,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 11),
+                    {
+                        value: 0.1,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 12),
+                    {
+                        value: 1,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 13),
+                    {
+                        value: 10,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 14),
+                    {
+                        value: 100,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 15),
+                    {
+                        value: 1000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 16),
+                    {
+                        value: 10000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ],
+                [
+                    Math.pow(10, 17),
+                    {
+                        value: 100000,
+                        abbreviation: "T",
+                        mantissaPrecision: -1
+                    }
+                ]
             ];
 
             data.forEach(([value, expectedResult]) => {
                 let result = computeAverage(value, "trillion", state);
+                expect(result).toEqual(expectedResult);
+            });
+        });
+
+        it("computes the correct mantissa precision", () => {
+            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
+            state.currentAbbreviations.and.returnValue({
+                thousand: "K",
+                million: "M",
+                billion: "B",
+                trillion: "T"
+            });
+
+            let data = [
+                [
+                    1,
+                    4,
+                    {
+                        value: 1,
+                        abbreviation: "",
+                        mantissaPrecision: 3
+                    }
+                ],
+                [
+                    10,
+                    4,
+                    {
+                        value: 10,
+                        abbreviation: "",
+                        mantissaPrecision: 2
+                    }
+                ],
+                [
+                    100,
+                    4,
+                    {
+                        value: 100,
+                        abbreviation: "",
+                        mantissaPrecision: 1
+                    }
+                ],
+                [
+                    1000,
+                    4,
+                    {
+                        value: 1,
+                        abbreviation: "K",
+                        mantissaPrecision: 3
+                    }
+                ],
+                [
+                    10000,
+                    4,
+                    {
+                        value: 10,
+                        abbreviation: "K",
+                        mantissaPrecision: 2
+                    }
+                ],
+                [
+                    1,
+                    2,
+                    {
+                        value: 1,
+                        abbreviation: "",
+                        mantissaPrecision: 1
+                    }
+                ],
+                [
+                    10,
+                    2,
+                    {
+                        value: 10,
+                        abbreviation: "",
+                        mantissaPrecision: 0
+                    }
+                ],
+                [
+                    100,
+                    2,
+                    {
+                        value: 100,
+                        abbreviation: "",
+                        mantissaPrecision: 0
+                    }
+                ]
+            ];
+
+            data.forEach(([value, totalLength, expectedResult]) => {
+                let result = computeAverage(value, undefined, state, totalLength);
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1342,6 +1936,20 @@ describe("formatting", () => {
             expect(result).toBe("-Infinity");
         });
 
+        it("calls `computeAverage` when a total length is set", () => {
+            let format = jasmine.createSpy("format");
+            let defaults = jasmine.createSpy("defaults");
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            state.currentDelimiters.and.returnValue({});
+            format.average = false;
+            format.totalLength = 3;
+
+            formatNumber(numbroStub(1), format, state, undefined, defaults);
+
+            expect(computeAverage).toHaveBeenCalled();
+            expect(insertAbbreviation).toHaveBeenCalled();
+        });
+
         it("calls `computeAverage` and `insertAbbreviation` when the `average` flag is provided", () => {
             let format = jasmine.createSpy("format");
             let defaults = jasmine.createSpy("defaults");
@@ -1379,7 +1987,8 @@ describe("formatting", () => {
 
             formatNumber(numbroStub(1), format, state, undefined, defaults);
 
-            expect(setMantissaPrecision).toHaveBeenCalledWith(jasmine.anything(), format.optionalMantissa, format.mantissa);
+            expect(setMantissaPrecision.calls.argsFor(0)[1]).toBe(format.optionalMantissa);
+            expect(setMantissaPrecision.calls.argsFor(0)[2]).toBe(format.mantissa);
         });
 
         it("set setCharacteristicPrecision according to `characteristic`", () => {
@@ -1462,6 +2071,62 @@ describe("formatting", () => {
 
             expect(state.currentDefaults).not.toHaveBeenCalled();
         });
+    });
 
+    describe("formatNumber computation", () => {
+        let formatNumber = undefined;
+
+        beforeEach(() => {
+            formatNumber = formattingModule.__get__("formatNumber");
+        });
+
+        it("computes the correct output", () => {
+            let data = [
+                //[[value, format, state, decimalSeparator, defaults], expectedOutput]
+                [
+                    [
+                        123456,
+                        {
+                            thousandSeparated: true,
+                            totalLength: 2
+                        },
+                        globalState,
+                        undefined,
+                        undefined
+                    ],
+                    "123k"
+                ],
+                [
+                    [
+                        12,
+                        {
+                            thousandSeparated: true,
+                            characteristic: 4
+                        },
+                        globalState,
+                        undefined,
+                        undefined
+                    ],
+                    "0,012"
+                ],
+                [
+                    [
+                        12,
+                        {
+                            totalLength: 4
+                        },
+                        globalState,
+                        undefined,
+                        undefined
+                    ],
+                    "12.00"
+                ]
+            ];
+
+            data.forEach(([[value, format, state, decimalSeparator, defaults], expectedResult]) => {
+                let result = formatNumber(numbroStub(value), format, state, decimalSeparator, defaults);
+                expect(result).toBe(expectedResult);
+            });
+        });
     });
 });
