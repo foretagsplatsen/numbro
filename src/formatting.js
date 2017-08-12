@@ -17,6 +17,18 @@ const bytes = {
     decimal: {scale: 1000, suffixes: decimalSuffixes, marker: "d"}
 };
 
+const defaultOptions = {
+    totalLength: 0,
+    characteristic: 0,
+    forceAverage: false,
+    average: false,
+    mantissa: -1,
+    optionalMantissa: true,
+    thousandSeparated: false,
+    negative: "sign",
+    forceSign: false
+};
+
 /**
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
@@ -154,7 +166,7 @@ function formatCurrency(n, providedFormat, state) {
     return output;
 }
 
-function computeAverage(value, forceAverage, abbreviations, totalLength) {
+function computeAverage({value, forceAverage, abbreviations, spaceSeparated = false, totalLength = 0}) {
     let abbreviation = "";
     let abs = Math.abs(value);
     let mantissaPrecision = -1;
@@ -177,7 +189,7 @@ function computeAverage(value, forceAverage, abbreviations, totalLength) {
         value = value / Math.pow(10, 3);
     }
 
-    let optionalSpace = abbreviations.spaced ? " " : "";
+    let optionalSpace = spaceSeparated ? " " : "";
 
     if (abbreviation) {
         abbreviation = optionalSpace + abbreviation;
@@ -298,7 +310,7 @@ function insertPostfix(output, postfix) {
     return output + postfix;
 }
 
-function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
+function formatNumber(n, providedFormat, state, decimalSeparator, defaults = state.currentDefaults()) {
     let value = n._value;
 
     if (value === 0 && state.hasZeroFormat()) {
@@ -309,27 +321,34 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
         return value.toString();
     }
 
-    defaults = defaults || state.currentDefaults();
+    let options = Object.assign({}, defaultOptions, defaults, providedFormat);
 
-    let totalLength = providedFormat.totalLength || defaults.characteristic || 0;
-    let characteristicPrecision = totalLength ? 0 : (providedFormat.characteristic || defaults.characteristic || 0);
-    let forceAverage = providedFormat.forceAverage || defaults.forceAverage || false;
-    let average = totalLength ? true : (forceAverage ? true : (providedFormat.average === undefined ? defaults.average : providedFormat.average));
+    let totalLength = options.totalLength;
+    let characteristicPrecision = totalLength ? 0 : options.characteristic;
+    let forceAverage = options.forceAverage;
+    let average = totalLength || forceAverage || options.average;
 
     // default when averaging is to chop off decimals
-    let mantissaPrecision = totalLength ? -1 : ((providedFormat.mantissa !== undefined) ? providedFormat.mantissa : (average ? (defaults.mantissa || 0) : -1));
-    let optionalMantissa = totalLength ? false : ((providedFormat.optionalMantissa === undefined) ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa);
-    let thousandSeparated = providedFormat.thousandSeparated || defaults.thousandSeparated || false;
-    let negative = providedFormat.negative || defaults.negative || "sign";
-    let forceSign = (providedFormat.forceSign === undefined) ? defaults.forceSign : providedFormat.forceSign;
+    let mantissaPrecision = totalLength ? -1 : (average ? 0 : options.mantissa);
+    let optionalMantissa = totalLength ? false : options.optionalMantissa;
+    let thousandSeparated = options.thousandSeparated;
+    let negative = options.negative;
+    let forceSign = options.forceSign;
 
     let abbreviation = "";
 
     if (average) {
-        let abbreviations = Object.assign({}, format.abbreviations, defaults.abbreviations, state.currentAbbreviations());
-        let data = computeAverage(value, forceAverage, abbreviations, totalLength);
+        let data = computeAverage({
+            value,
+            forceAverage,
+            abbreviations: state.currentAbbreviations(),
+            spaceSeparated: options.spaceSeparated,
+            totalLength
+        });
+
         value = data.value;
         abbreviation = data.abbreviation;
+
         if (totalLength) {
             mantissaPrecision = data.mantissaPrecision;
         }

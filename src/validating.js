@@ -33,8 +33,7 @@ const validAbbreviations = {
         thousand: "string",
         million: "string",
         billion: "string",
-        trillion: "string",
-        spaced: "boolean"
+        trillion: "string"
     }
 };
 
@@ -67,6 +66,7 @@ const validFormat = {
     },
     optionalMantissa: "boolean",
     thousandSeparated: "boolean",
+    spaceSeparated: "boolean",
     abbreviations: validAbbreviations,
     negative: {
         type: "string",
@@ -85,6 +85,7 @@ const validLanguage = {
         }
     },
     abbreviations: validAbbreviations,
+    spaceSeparated: "boolean",
     ordinal: "function",
     currency: {
         type: "object",
@@ -167,7 +168,7 @@ function validateSpec(toValidate, spec, prefix) {
         }
 
         if (data.children) {
-            let valid = validateSpec(value, data.children, prefix);
+            let valid = validateSpec(value, data.children, `[Validate ${key}]`);
 
             if (!valid) {
                 return false;

@@ -979,7 +979,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, undefined, abbreviations);
+                let result = computeAverage({value, abbreviations});
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -989,8 +989,7 @@ describe("formatting", () => {
                 thousand: "K",
                 million: "M",
                 billion: "B",
-                trillion: "T",
-                spaced: true
+                trillion: "T"
             };
 
             let data = [
@@ -1141,7 +1140,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, undefined, abbreviations);
+                let result = computeAverage({
+                    value,
+                    abbreviations,
+                    spaceSeparated: true
+                });
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1230,7 +1233,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "thousand", abbreviations);
+                let result = computeAverage({
+                    value,
+                    forceAverage: "thousand",
+                    abbreviations
+                });
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1319,7 +1326,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "million", abbreviations);
+                let result = computeAverage({
+                    value,
+                    forceAverage: "million",
+                    abbreviations
+                });
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1408,7 +1419,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "billion", abbreviations);
+                let result = computeAverage({
+                    value,
+                    forceAverage: "billion",
+                    abbreviations
+                });
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1497,7 +1512,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "trillion", abbreviations);
+                let result = computeAverage({
+                    value,
+                    forceAverage: "trillion",
+                    abbreviations
+                });
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1586,7 +1605,11 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, totalLength, expectedResult]) => {
-                let result = computeAverage(value, undefined, abbreviations, totalLength);
+                let result = computeAverage({
+                    value,
+                    abbreviations,
+                    totalLength
+                });
                 expect(result).toEqual(expectedResult);
             });
         });

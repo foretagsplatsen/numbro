@@ -171,6 +171,12 @@ describe("validatingSpec", () => {
                         currencyDefaults: {bar: 2}
                     },
                     "[Validate currencyDefaults] Invalid key: bar"
+                ],
+                [
+                    {
+                        currency: {symbol: 2}
+                    },
+                    "[Validate currency] symbol type mismatched: \"string\" expected, \"number\" provided"
                 ]
             ];
 

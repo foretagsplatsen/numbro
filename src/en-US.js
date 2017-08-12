@@ -16,9 +16,9 @@ module.exports = {
         thousand: "k",
         million: "m",
         billion: "b",
-        trillion: "t",
-        spaced: false
+        trillion: "t"
     },
+    spaceSeparated: false,
     ordinal: function(number) {
         let b = number % 10;
         return (~~(number % 100 / 10) === 1) ? "th" : (b === 1) ? "st" : (b === 2) ? "nd" : (b === 3) ? "rd" : "th";
@@ -31,16 +31,12 @@ module.exports = {
     currencyDefaults: {
         thousandSeparated: true,
         totalLength: 4,
-        abbreviations: {
-            spaced: true
-        }
+        spaceSeparated: true
     },
     formats: {
         fourDigits: {
             totalLength: 4,
-            abbreviations: {
-                spaced: true
-            }
+            spaceSeparated: true
         },
         fullWithTwoDecimals: {
             output: "currency",
