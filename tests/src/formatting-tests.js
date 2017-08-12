@@ -824,13 +824,12 @@ describe("formatting", () => {
         });
 
         it("computes the correct values when not forcing a precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -980,20 +979,19 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, undefined, state);
+                let result = computeAverage(value, undefined, abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct abbreviations when space separating", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T",
                 spaced: true
-            });
+            };
 
             let data = [
                 [
@@ -1143,19 +1141,18 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, undefined, state);
+                let result = computeAverage(value, undefined, abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct values when forcing a thousand precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -1233,19 +1230,18 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "thousand", state);
+                let result = computeAverage(value, "thousand", abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct values when forcing a million precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -1323,19 +1319,18 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "million", state);
+                let result = computeAverage(value, "million", abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct values when forcing a billion precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -1413,19 +1408,18 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "billion", state);
+                let result = computeAverage(value, "billion", abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct values when forcing a trillion precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -1503,19 +1497,18 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = computeAverage(value, "trillion", state);
+                let result = computeAverage(value, "trillion", abbreviations);
                 expect(result).toEqual(expectedResult);
             });
         });
 
         it("computes the correct mantissa precision", () => {
-            let state = jasmine.createSpyObj("state", ["currentAbbreviations"]);
-            state.currentAbbreviations.and.returnValue({
+            let abbreviations = {
                 thousand: "K",
                 million: "M",
                 billion: "B",
                 trillion: "T"
-            });
+            };
 
             let data = [
                 [
@@ -1593,7 +1586,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, totalLength, expectedResult]) => {
-                let result = computeAverage(value, undefined, state, totalLength);
+                let result = computeAverage(value, undefined, abbreviations, totalLength);
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -1939,7 +1932,7 @@ describe("formatting", () => {
         it("calls `computeAverage` when a total length is set", () => {
             let format = jasmine.createSpy("format");
             let defaults = jasmine.createSpy("defaults");
-            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentAbbreviations"]);
             state.currentDelimiters.and.returnValue({});
             format.average = false;
             format.totalLength = 3;
@@ -1953,7 +1946,7 @@ describe("formatting", () => {
         it("calls `computeAverage` and `insertAbbreviation` when the `average` flag is provided", () => {
             let format = jasmine.createSpy("format");
             let defaults = jasmine.createSpy("defaults");
-            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters"]);
+            let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentAbbreviations"]);
             state.currentDelimiters.and.returnValue({});
             format.average = true;
 

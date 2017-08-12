@@ -154,8 +154,7 @@ function formatCurrency(n, providedFormat, state) {
     return output;
 }
 
-function computeAverage(value, forceAverage, state, totalLength) {
-    let abbreviations = state.currentAbbreviations();
+function computeAverage(value, forceAverage, abbreviations, totalLength) {
     let abbreviation = "";
     let abs = Math.abs(value);
     let mantissaPrecision = -1;
@@ -315,19 +314,20 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults) {
     let totalLength = providedFormat.totalLength || defaults.characteristic || 0;
     let characteristicPrecision = totalLength ? 0 : (providedFormat.characteristic || defaults.characteristic || 0);
     let forceAverage = providedFormat.forceAverage || defaults.forceAverage || false;
-    let average = totalLength ? true : (providedFormat.average || defaults.average || !!forceAverage);
+    let average = totalLength ? true : (forceAverage ? true : (providedFormat.average === undefined ? defaults.average : providedFormat.average));
 
     // default when averaging is to chop off decimals
     let mantissaPrecision = totalLength ? -1 : ((providedFormat.mantissa !== undefined) ? providedFormat.mantissa : (average ? (defaults.mantissa || 0) : -1));
-    let optionalMantissa = totalLength ? false : (providedFormat.optionalMantissa === undefined ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa);
+    let optionalMantissa = totalLength ? false : ((providedFormat.optionalMantissa === undefined) ? defaults.optionalMantissa !== false : providedFormat.optionalMantissa);
     let thousandSeparated = providedFormat.thousandSeparated || defaults.thousandSeparated || false;
     let negative = providedFormat.negative || defaults.negative || "sign";
-    let forceSign = providedFormat.forceSign || defaults.forceSign || false;
+    let forceSign = (providedFormat.forceSign === undefined) ? defaults.forceSign : providedFormat.forceSign;
 
     let abbreviation = "";
 
     if (average) {
-        let data = computeAverage(value, forceAverage, state, totalLength);
+        let abbreviations = Object.assign({}, format.abbreviations, defaults.abbreviations, state.currentAbbreviations());
+        let data = computeAverage(value, forceAverage, abbreviations, totalLength);
         value = data.value;
         abbreviation = data.abbreviation;
         if (totalLength) {

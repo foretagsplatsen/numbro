@@ -20,17 +20,17 @@ function chooseLanguage(tag) { currentLanguageTag = tag; }
 
 function currentLanguageData() { return languages[currentLanguageTag]; }
 
-state.languages = () => languages;
+state.languages = () => Object.assign({}, languages);
 
 //
 // Current language accessors
 //
 
 state.currentLanguage = () => currentLanguageTag;
-state.currentCurrency = () => currentLanguageData().currency || {};
-state.currentAbbreviations = () => currentLanguageData().abbreviations || {};
-state.currentDelimiters = () => currentLanguageData().delimiters || {};
-state.currentOrdinal = () => currentLanguageData().ordinal || {};
+state.currentCurrency = () => currentLanguageData().currency;
+state.currentAbbreviations = () => currentLanguageData().abbreviations;
+state.currentDelimiters = () => currentLanguageData().delimiters;
+state.currentOrdinal = () => currentLanguageData().ordinal;
 
 //
 // Defaults

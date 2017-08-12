@@ -124,6 +124,64 @@ describe("validatingSpec", () => {
         });
     });
 
+    describe("validateLanguage", () => {
+        let error = undefined;
+        let revert = undefined;
+
+        beforeEach(() => {
+            error = jasmine.createSpy("error");
+            revert = validating.__set__({
+                console: {error}
+            });
+        });
+
+        afterEach(() => {
+            revert();
+        });
+
+        it("validates valid language", () => {
+            let data = [
+                // language
+                {delimiters: {thousands: "T"}}
+            ];
+
+            data.forEach((format) => {
+                let result = validating.validateLanguage(format);
+                expect(result).toBeTruthy();
+            });
+        });
+
+        it("invalidates invalid language", () => {
+            let data = [
+                // [language, errorMessage]
+                [
+                    {
+                        bar: 0
+                    },
+                    "[Validate language] Invalid key: bar"
+                ],
+                [
+                    {
+                        languageTag: 2
+                    },
+                    "[Validate language] languageTag type mismatched: \"string\" expected, \"number\" provided"
+                ],
+                [
+                    {
+                        currencyDefaults: {bar: 2}
+                    },
+                    "[Validate currencyDefaults] Invalid key: bar"
+                ]
+            ];
+
+            data.forEach(([format, errorMessage]) => {
+                let result = validating.validateLanguage(format);
+                expect(result).toBeFalsy();
+                expect(error.calls.mostRecent().args[0]).toBe(errorMessage);
+            });
+        });
+    });
+
     // Todo
     describe("validateInput", () => {
         it("is dummy", () => {

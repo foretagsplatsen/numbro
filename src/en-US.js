@@ -28,14 +28,33 @@ module.exports = {
         position: "prefix",
         code: "USD"
     },
-    defaults: {
+    currencyDefaults: {
         thousandSeparated: true,
-        currencyFormat: ",4 a"
+        totalLength: 4,
+        abbreviations: {
+            spaced: true
+        }
     },
     formats: {
-        fourDigits: "4 a",
-        fullWithTwoDecimals: "$ ,0.00",
-        fullWithTwoDecimalsNoCurrency: ",0.00",
-        fullWithNoDecimals: "$ ,0"
+        fourDigits: {
+            totalLength: 4,
+            abbreviations: {
+                spaced: true
+            }
+        },
+        fullWithTwoDecimals: {
+            output: "currency",
+            thousandSeparated: true,
+            mantissa: 2
+        },
+        fullWithTwoDecimalsNoCurrency: {
+            thousandSeparated: true,
+            mantissa: 2
+        },
+        fullWithNoDecimals: {
+            output: "currency",
+            thousandSeparated: true,
+            mantissa: 0
+        }
     }
 };
