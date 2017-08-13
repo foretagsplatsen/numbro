@@ -8,6 +8,7 @@
 
 const globalState = require("./globalState");
 const validating = require("./validating");
+const parsing = require("./parsing");
 
 const binarySuffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
 const decimalSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
@@ -25,6 +26,7 @@ const defaultOptions = {
     mantissa: -1,
     optionalMantissa: true,
     thousandSeparated: false,
+    spaceSeparated: false,
     negative: "sign",
     forceSign: false
 };
@@ -33,6 +35,10 @@ const defaultOptions = {
  * Entry point. We add the prefix and postfix here to ensure they are correctly placed
  */
 function format(n, providedFormat = {}, numbro) {
+    if (typeof providedFormat === "string") {
+        providedFormat = parsing.parseFormat(providedFormat);
+    }
+
     let valid = validating.validateFormat(providedFormat);
 
     if (!valid) {
@@ -332,6 +338,7 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults = sta
     let mantissaPrecision = totalLength ? -1 : (average ? 0 : options.mantissa);
     let optionalMantissa = totalLength ? false : options.optionalMantissa;
     let thousandSeparated = options.thousandSeparated;
+    let spaceSeparated = options.spaceSeparated;
     let negative = options.negative;
     let forceSign = options.forceSign;
 
@@ -342,7 +349,7 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults = sta
             value,
             forceAverage,
             abbreviations: state.currentAbbreviations(),
-            spaceSeparated: options.spaceSeparated,
+            spaceSeparated: spaceSeparated,
             totalLength
         });
 

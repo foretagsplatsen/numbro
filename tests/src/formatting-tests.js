@@ -1,5 +1,6 @@
 const rewire = require("rewire");
 const validating = require("../../src/validating");
+const parsing = require("../../src/parsing");
 
 const formattingModule = rewire("../../src/formatting");
 const numbroStub = (value) => {
@@ -104,6 +105,16 @@ describe("formatting", () => {
 
             let result = formatting.format(instance, providedFormat);
             expect(result).toBe(output);
+        });
+
+        it("parse the format when it's a string", () => {
+            spyOn(parsing, "parseFormat").and.callThrough();
+
+            let instance = jasmine.createSpy("instance");
+            let providedFormat = "00$";
+
+            formatting.format(instance, providedFormat);
+            expect(parsing.parseFormat).toHaveBeenCalledWith(providedFormat);
         });
     });
 

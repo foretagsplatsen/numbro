@@ -3,20 +3,192 @@ const parsing = rewire("../../src/parsing");
 
 describe("parsing", () => {
     describe("parseFormat", () => {
+        let parsePrefix = undefined;
+        let parsePostfix = undefined;
+        let parseOutput = undefined;
+        let parseThousandSeparated = undefined;
+        let parseSpaceSeparated = undefined;
+        let parseTotalLength = undefined;
+        let parseCharacteristic = undefined;
+        let parseMantissa = undefined;
+        let parseAverage = undefined;
+        let parseOptionalMantissa = undefined;
+        let parseNegative = undefined;
+        let parseForceSign = undefined;
+        let revert = undefined;
+
+        beforeEach(() => {
+            parseOutput = jasmine.createSpy("parseOutput");
+            parsePrefix = jasmine.createSpy("parsePrefix");
+            parsePostfix = jasmine.createSpy("parsePostfix");
+            parseThousandSeparated = jasmine.createSpy("parseThousandSeparated");
+            parseSpaceSeparated = jasmine.createSpy("parseSpaceSeparated");
+            parseTotalLength = jasmine.createSpy("parseSpaceSeparated");
+            parseCharacteristic = jasmine.createSpy("parseCharacteristic");
+            parseMantissa = jasmine.createSpy("parseMantissa");
+            parseAverage = jasmine.createSpy("parseAverage");
+            parseOptionalMantissa = jasmine.createSpy("parseOptionalMantissa");
+            parseNegative = jasmine.createSpy("parseNegative");
+            parseForceSign = jasmine.createSpy("parseForceSign");
+
+            revert = parsing.__set__({
+                parsePrefix,
+                parsePostfix,
+                parseOutput,
+                parseThousandSeparated,
+                parseSpaceSeparated,
+                parseTotalLength,
+                parseCharacteristic,
+                parseMantissa,
+                parseOptionalMantissa,
+                parseAverage,
+                parseNegative,
+                parseForceSign
+            });
+        });
+
+        afterEach(() => {
+            revert();
+        });
+
         it("looks for the output", () => {
             let input = jasmine.createSpy("input");
             let result = jasmine.createSpy("result");
-            let parseOutput = jasmine.createSpy("parseOutput");
-            let revert = parsing.__set__({parseOutput});
 
-            try {
-                parsing.parseFormat(input, result);
-                expect(parseOutput).toHaveBeenCalledWith(input, result);
-            } finally {
-                revert();
-            }
+            parsing.parseFormat(input, result);
+            expect(parseOutput).toHaveBeenCalled();
         });
     });
+
+    describe("parseFormat output", () => {
+        it("produces the correct format", () => {
+            let data = [
+                // [string, expectedFormat]
+                [
+                    "$",
+                    {
+                        output: "currency"
+                    }
+                ],
+                [
+                    ",$",
+                    {
+                        output: "currency",
+                        thousandSeparated: true
+                    }
+                ],
+                [
+                    "{,}$",
+                    {
+                        output: "currency",
+                        prefix: ","
+                    }
+                ],
+                [
+                    "${,}", // eslint-disable-line no-template-curly-in-string
+                    {
+                        output: "currency",
+                        postfix: ","
+                    }
+                ],
+                [
+                    "$ ", // eslint-disable-line no-template-curly-in-string
+                    {
+                        output: "currency",
+                        spaceSeparated: true
+                    }
+                ],
+                [
+                    " $", // eslint-disable-line no-template-curly-in-string
+                    {
+                        output: "currency",
+                        spaceSeparated: true
+                    }
+                ],
+                [
+                    ",4 $",
+                    {
+                        thousandSeparated: true,
+                        output: "currency",
+                        totalLength: 4,
+                        spaceSeparated: true
+                    }
+                ],
+                [
+                    ",00 $",
+                    {
+                        thousandSeparated: true,
+                        output: "currency",
+                        characteristic: 2,
+                        spaceSeparated: true
+                    }
+                ],
+                [
+                    ",.00 $",
+                    {
+                        thousandSeparated: true,
+                        output: "currency",
+                        mantissa: 2,
+                        spaceSeparated: true,
+                        optionalMantissa: false
+                    }
+                ],
+                [
+                    "a$",
+                    {
+                        output: "currency",
+                        average: true
+                    }
+                ],
+                [
+                    ",[.]00 $",
+                    {
+                        thousandSeparated: true,
+                        output: "currency",
+                        mantissa: 2,
+                        spaceSeparated: true,
+                        optionalMantissa: true
+                    }
+                ],
+                [
+                    "($)",
+                    {
+                        output: "currency",
+                        negative: "parenthesis"
+                    }
+                ],
+                [
+                    "+($)",
+                    {
+                        output: "currency",
+                        negative: "parenthesis",
+                        forceSign: true
+                    }
+                ],
+                [
+                    "-$",
+                    {
+                        output: "currency",
+                        negative: "sign"
+                    }
+                ],
+                [
+                    "+-$",
+                    {
+                        output: "currency",
+                        negative: "sign",
+                        forceSign: true
+                    }
+                ]
+            ];
+
+            data.forEach(([string, expectedFormat]) => {
+                let result = parsing.parseFormat(string);
+                expect(result).toEqual(expectedFormat);
+            });
+        });
+    });
+
     describe("output", () => {
         let parseOutput = undefined;
 
