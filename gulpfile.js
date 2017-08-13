@@ -35,7 +35,7 @@ const plugins = require("gulp-load-plugins")({
     }
 });
 
-gulp.task("default", ["lint", "tests"]);
+gulp.task("default", ["lint", "test"]);
 
 gulp.task("lint", ["lint:js"]);
 
@@ -54,13 +54,13 @@ gulp.task("pre-test", () => {
         .pipe(plugins.istanbul.hookRequire());
 });
 
-gulp.task("tests", ["pre-test"], () => {
+gulp.task("test", ["pre-test"], () => {
     return gulp.src("./tests/**/*.js")
         .pipe(plugins.jasmine({
             reporter: new reporters.TerminalReporter()
         }))
-        .pipe(plugins.istanbul.writeReports());
-    // .pipe(plugins.istanbul.enforceThresholds({thresholds: {global: 90}}));
+        .pipe(plugins.istanbul.writeReports())
+        .pipe(plugins.istanbul.enforceThresholds({thresholds: {global: 100}}));
 });
 
 gulp.task("jasmine", () => {

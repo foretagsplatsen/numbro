@@ -173,6 +173,16 @@ describe("parsing", () => {
                     }
                 ],
                 [
+                    ",.4 $",
+                    {
+                        thousandSeparated: true,
+                        output: "currency",
+                        totalLength: 4,
+                        spaceSeparated: true,
+                        optionalMantissa: false
+                    }
+                ],
+                [
                     "($)",
                     {
                         output: "currency",

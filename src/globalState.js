@@ -50,19 +50,19 @@ state.currentOrdinal = () => currentLanguageData().ordinal;
 // Defaults
 //
 
-state.currentDefaults = () => currentLanguageData().defaults || {};
-state.currentOrdinalDefaults = () => currentLanguageData().ordinalDefaults || state.currentDefaults();
-state.currentByteDefaults = () => currentLanguageData().byteDefaults || state.currentDefaults();
-state.currentPercentageDefaults = () => currentLanguageData().percentageDefaults || state.currentDefaults();
-state.currentCurrencyDefaults = () => currentLanguageData().currencyDefaults || state.currentDefaults();
+state.currentDefaults = () => Object.assign({}, currentLanguageData().defaults);
+state.currentOrdinalDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().ordinalDefaults);
+state.currentByteDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().byteDefaults);
+state.currentPercentageDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().percentageDefaults);
+state.currentCurrencyDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().currencyDefaults);
 
 //
 // Zero format
 //
 
-state.hasZeroFormat = () => zeroFormat !== null;
 state.getZeroFormat = () => zeroFormat;
 state.setZeroFormat = (format) => zeroFormat = typeof(format) === "string" ? format : null;
+state.hasZeroFormat = () => zeroFormat !== null;
 
 //
 // Getters/Setters
@@ -96,13 +96,11 @@ state.setLanguage = (tag, fallbackTag = enUS.languageTag) => {
     let suffix = tag.split("-")[0];
     let matchingLanguageTag = null;
     if (!languages[tagToUse]) {
-        if (suffix) {
-            Object.keys(languages).forEach(each => {
-                if (!matchingLanguageTag && each.split("-")[0] === suffix) {
-                    matchingLanguageTag = each;
-                }
-            });
-        }
+        Object.keys(languages).forEach(each => {
+            if (!matchingLanguageTag && each.split("-")[0] === suffix) {
+                matchingLanguageTag = each;
+            }
+        });
 
         if (languages[matchingLanguageTag]) {
             tagToUse = matchingLanguageTag;

@@ -63,7 +63,10 @@
     "yargs": "^8.0.2"
   },
   "scripts": {
-    "test": "grunt test"
+    "ci": "gulp",
+    "test": "gulp test",
+    "coverage": "istanbul cover ./node_modules/.bin/jasmine --captureExceptions",
+    "lint": "gulp lint"
   },
   "files": [
     "LICENSE",
