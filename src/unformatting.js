@@ -1,36 +1,53 @@
 /*!
- * unformatting.js
- * version : 2.0.0
- * author : Benjamin Van Ryseghem
- * license : MIT
- * https://benjamin.vanryseghem.com
+ * Copyright (c) 2017 Benjamin Van Ryseghem<benjamin@vanryseghem.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 // Todo: implement
 
 const globalState = require("./globalState");
 
-function unformat(inputString, format, numbro) {
-    let value = NaN;
-
+function unformatValue(inputString, format) {
     if (!isNaN(+inputString)) {
-        value = +inputString;
-    } else {
-        // Remove the thousand separators
-        let delimiters = globalState.currentDelimiters();
-        let stripped = inputString.replace(new RegExp(delimiters.thousands, "g"), "");
-
-        if (stripped !== inputString) {
-            return unformat(stripped, format, numbro);
-        }
-
-        stripped = inputString.replace(new RegExp(delimiters.decimal, "g"), ".");
-
-        if (stripped !== inputString) {
-            return unformat(stripped, format, numbro);
-        }
+        return +inputString;
     }
 
+    // Remove the thousand separators
+    let delimiters = globalState.currentDelimiters();
+    let stripped = inputString.replace(new RegExp(delimiters.thousands, "g"), "");
+
+    if (stripped !== inputString) {
+        return unformatValue(stripped, format);
+    }
+
+    stripped = inputString.replace(new RegExp(delimiters.decimal, "g"), ".");
+
+    if (stripped !== inputString) {
+        return unformatValue(stripped, format);
+    }
+
+    return undefined;
+}
+
+function unformat(inputString, format, numbro) {
+    let value = unformatValue(inputString, format);
     return numbro(value);
 }
 
