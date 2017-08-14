@@ -34,18 +34,20 @@ function multiplier(x) {
 }
 
 function correctionFactor(...args) {
-    return args.reduce((prev, next) => {
+    let smaller = args.reduce((prev, next) => {
         let mp = multiplier(prev);
         let mn = multiplier(next);
-        return mp > mn ? mp : mn;
+        return mp > mn ? prev : next;
     }, -Infinity);
+
+    return multiplier(smaller);
 }
 
 function add(n, other, numbro) {
     let value = other;
 
     if (numbro.isNumbro(other)) {
-        value = other.value();
+        value = other._value;
     }
 
     let factor = correctionFactor(n._value, value);
@@ -62,7 +64,7 @@ function subtract(n, other, numbro) {
     let value = other;
 
     if (numbro.isNumbro(other)) {
-        value = other.value();
+        value = other._value;
     }
 
     let factor = correctionFactor(n._value, value);
@@ -79,7 +81,7 @@ function multiply(n, other, numbro) {
     let value = other;
 
     if (numbro.isNumbro(other)) {
-        value = other.value();
+        value = other._value;
     }
 
     function callback(accum, curr) {
@@ -99,7 +101,7 @@ function divide(n, other, numbro) {
     let value = other;
 
     if (numbro.isNumbro(other)) {
-        value = other.value();
+        value = other._value;
     }
 
     function callback(accum, curr) {
@@ -111,8 +113,14 @@ function divide(n, other, numbro) {
     return n;
 }
 
-function set(n, input) {
-    n._value = input;
+function set (n, other, numbro) {
+    let value = other;
+
+    if (numbro.isNumbro(other)) {
+        value = other._value;
+    }
+
+    n._value = value;
     return n;
 }
 
@@ -121,5 +129,5 @@ module.exports = numbro => ({
     subtract: (n, other) => subtract(n, other, numbro),
     multiply: (n, other) => multiply(n, other, numbro),
     divide: (n, other) => divide(n, other, numbro),
-    set
+    set: (n, other) => set(n, other, numbro)
 });
