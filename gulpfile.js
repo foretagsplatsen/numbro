@@ -154,7 +154,7 @@ const referencesToVersion = [
     "./package.json",
     "./bower.json",
     "./component.json",
-    "./src/**/*.js"
+    "./src/numbro.js"
 ];
 
 gulp.task("bump:major", () => {
@@ -182,22 +182,6 @@ gulp.task("bump:patch", () => {
             global: true
         }))
         .pipe(gulp.dest("./"));
-});
-
-// Release
-
-gulp.task("release", () => {
-    let version = require("./package.json").version;
-    return gulp.src("./package.json")
-        .pipe(plugins.confirm({
-            question: `Are you sure you want to publish a new release with version ${version}? (yes/no)`,
-            input: "_key:y"
-        }))
-        .pipe(plugins.git.tag(version, `Release version ${version}`, err => {
-            if (err) {
-                throw err;
-            }
-        }));
 });
 
 // Clean
