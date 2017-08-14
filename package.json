@@ -42,12 +42,9 @@
     "gulp-bump": "^2.7.0",
     "gulp-concat": "^2.6.0",
     "gulp-confirm": "^1.0.6",
-    "gulp-declare": "^0.3.0",
     "gulp-eslint": "^4.0.0",
-    "gulp-flatmap": "^1.0.0",
     "gulp-foreach": "^0.1.0",
     "gulp-git": "^2.4.2",
-    "gulp-if": "^2.0.2",
     "gulp-istanbul": "^1.1.2",
     "gulp-jasmine": "^2.4.2",
     "gulp-jasmine-browser": "^1.9.0",
@@ -59,8 +56,7 @@
     "rewire": "^2.5.2",
     "uglify-js": "^2.6.2",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "yargs": "^8.0.2"
+    "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {
     "ci": "gulp",
