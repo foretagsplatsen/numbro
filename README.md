@@ -1,17 +1,15 @@
 # [numbro](https://numbrojs.com/)
 
-[![Join the chat at https://gitter.im/foretagsplatsen/numbro](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/foretagsplatsen/numbro?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 A javascript library for formatting and manipulating numbers.
 
-[Website and documentation](http://foretagsplatsen.github.io/numbro)
+[Website and documentation](http://numbrojs.com)
 
 
 # Travis Build Status
 
-Master [![Build Status](https://travis-ci.org/foretagsplatsen/numbro.svg?branch=master)](https://travis-ci.org/foretagsplatsen/numbro)
+Master [![Build Status](https://travis-ci.org/BenjaminVanRyseghem/numbro.svg?branch=master)](https://travis-ci.org/BenjaminVanRyseghem/numbro)
 
-Develop [![Build Status](https://travis-ci.org/foretagsplatsen/numbro.svg?branch=develop)](https://travis-ci.org/foretagsplatsen/numbro)
+Develop [![Build Status](https://travis-ci.org/BenjaminVanRyseghem/numbro.svg?branch=develop)](https://travis-ci.org/BenjaminVanRyseghem/numbro)
 
 # NPM
 
@@ -65,6 +63,8 @@ See [CHANGELOG.md](CHANGELOG.md).
 Copyright © 2014 Adam Draper
 
 Copyright © 2015-2016 Företagsplatsen AB
+
+Copyright © 2017 Benjamin Van Ryseghem<benjamin@vanryseghem.com>
 
 ---
 
