@@ -90,6 +90,9 @@ describe("unformatting", () => {
                 // [[input, delimiters], expectedOutput]
                 [["N/A", {thousands: ",", decimal: "."}], 0],
 
+                [[".12", {thousands: ",", decimal: "."}], 0.12],
+                [[",12", {thousands: ".", decimal: ","}], 0.12],
+
                 [["(123)", {thousands: ",", decimal: "."}], -123],
 
                 [["1,234.56", {thousands: ",", decimal: "."}], 1234.56],
@@ -336,69 +339,72 @@ describe("unformatting", () => {
 });
 
 describe("regression tests", () => {
-    let previousFormat = undefined;
+    describe("compatible with version 1", () => {
 
-    beforeEach(() => {
-        previousFormat = globalState.getZeroFormat();
-        globalState.setZeroFormat("N/A");
-    });
+        let previousFormat = undefined;
 
-    afterEach(() => {
-        globalState.setZeroFormat(previousFormat);
-    });
+        beforeEach(() => {
+            previousFormat = globalState.getZeroFormat();
+            globalState.setZeroFormat("N/A");
+        });
 
-    it("is compatible with version 1", () => {
-        let data = [
-            ["2:23:57", 8637],
-            ["-76%", -0.76],
-            ["100B", 100],
-            ["3.154 TiB", 3.154 * Math.pow(1024, 4)],
-            ["3.154 TB", 3154000000000],
-            ["1.5YiB", 1.5 * Math.pow(1024, 8)], // 1024^8
-            ["1.5YB", 1.5 * Math.pow(1000, 8)], // 1000^8
-            ["1024YiB", Math.pow(1024, 9)], // 1024^9
-            ["1000YB", Math.pow(1000, 9)], // 1000^9
-            ["($1.23m)", -1230000],
-            ["$ 10,000.00", 10000],
-            ["10,000.123", 10000.123],
-            ["(0.12345)", -0.12345],
-            // ["((--0.12345))", 0.12345],
-            ["23rd", 23],
-            ["31st", 31],
-            ["1.23t", 1230000000000],
-            ["N/A", 0],
+        afterEach(() => {
+            globalState.setZeroFormat(previousFormat);
+        });
 
-            // Invalid strings which don't represent a number are converted
-            // to undefined.
-            ["", undefined],
-            ["not a number", undefined],
+        it("works", () => {
+            let data = [
+                ["2:23:57", 8637],
+                ["-76%", -0.76],
+                ["100B", 100],
+                ["3.154 TiB", 3.154 * Math.pow(1024, 4)],
+                ["3.154 TB", 3154000000000],
+                ["1.5YiB", 1.5 * Math.pow(1024, 8)], // 1024^8
+                ["1.5YB", 1.5 * Math.pow(1000, 8)], // 1000^8
+                ["1024YiB", Math.pow(1024, 9)], // 1024^9
+                ["1000YB", Math.pow(1000, 9)], // 1000^9
+                ["($1.23m)", -1230000],
+                ["$ 10,000.00", 10000],
+                ["10,000.123", 10000.123],
+                ["(0.12345)", -0.12345],
+                // ["((--0.12345))", 0.12345],
+                ["23rd", 23],
+                ["31st", 31],
+                ["1.23t", 1230000000000],
+                ["N/A", 0],
 
-            // Pass Through for Numbers
-            [0, 0],
-            [1, 1],
-            [1.1, 1.1],
-            [-0, 0],
-            [-1, -1],
-            [-1.1, -1.1],
-            [NaN, NaN],
+                // Invalid strings which don't represent a number are converted
+                // to undefined.
+                ["", undefined],
+                ["not a number", undefined],
 
-            // JavaScript values which are neither Number or String are
-            // converted to undefined.
-            [undefined, undefined],
-            [null, undefined],
-            [[], undefined],
-            [{}, undefined]
-        ];
+                // Pass Through for Numbers
+                [0, 0],
+                [1, 1],
+                [1.1, 1.1],
+                [-0, 0],
+                [-1, -1],
+                [-1.1, -1.1],
+                [NaN, NaN],
 
-        data.forEach(([value, expectedOutput]) => {
-            let result = unformatting.unformat(value);
-            if (expectedOutput === undefined) {
-                expect(result).toBe(expectedOutput);
-            } else if (isNaN(expectedOutput)) {
-                expect(value).toBeNaN();
-            } else {
-                expect(result._value).toBe(expectedOutput);
-            }
+                // JavaScript values which are neither Number or String are
+                // converted to undefined.
+                [undefined, undefined],
+                [null, undefined],
+                [[], undefined],
+                [{}, undefined]
+            ];
+
+            data.forEach(([value, expectedOutput]) => {
+                let result = unformatting.unformat(value);
+                if (expectedOutput === undefined) {
+                    expect(result).toBe(expectedOutput);
+                } else if (isNaN(expectedOutput)) {
+                    expect(value).toBeNaN();
+                } else {
+                    expect(result._value).toBe(expectedOutput);
+                }
+            });
         });
     });
 });

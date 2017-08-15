@@ -34,7 +34,9 @@ describe("parsing", () => {
         let parseCharacteristic = undefined;
         let parseMantissa = undefined;
         let parseAverage = undefined;
+        let parseForceAverage = undefined;
         let parseOptionalMantissa = undefined;
+        let parseOptionalCharacteristic = undefined;
         let parseNegative = undefined;
         let parseForceSign = undefined;
         let revert = undefined;
@@ -49,7 +51,9 @@ describe("parsing", () => {
             parseCharacteristic = jasmine.createSpy("parseCharacteristic");
             parseMantissa = jasmine.createSpy("parseMantissa");
             parseAverage = jasmine.createSpy("parseAverage");
+            parseForceAverage = jasmine.createSpy("parseForceAverage");
             parseOptionalMantissa = jasmine.createSpy("parseOptionalMantissa");
+            parseOptionalCharacteristic = jasmine.createSpy("parseOptionalCharacteristic");
             parseNegative = jasmine.createSpy("parseNegative");
             parseForceSign = jasmine.createSpy("parseForceSign");
 
@@ -63,7 +67,9 @@ describe("parsing", () => {
                 parseCharacteristic,
                 parseMantissa,
                 parseOptionalMantissa,
+                parseOptionalCharacteristic,
                 parseAverage,
+                parseForceAverage,
                 parseNegative,
                 parseForceSign
             });
@@ -74,11 +80,19 @@ describe("parsing", () => {
         });
 
         it("looks for the output", () => {
+            let result = jasmine.createSpy("result");
+
+            parsing.parseFormat("", result);
+            expect(parseOutput).toHaveBeenCalled();
+        });
+
+        it("returns the input if it's not a string", () => {
             let input = jasmine.createSpy("input");
             let result = jasmine.createSpy("result");
 
-            parsing.parseFormat(input, result);
-            expect(parseOutput).toHaveBeenCalled();
+            let format = parsing.parseFormat(input, result);
+            expect(parseOutput).not.toHaveBeenCalled();
+            expect(format).toBe(input);
         });
     });
 
@@ -152,7 +166,8 @@ describe("parsing", () => {
                         output: "currency",
                         mantissa: 2,
                         spaceSeparated: true,
-                        optionalMantissa: false
+                        optionalMantissa: false,
+                        optionalCharacteristic: true
                     }
                 ],
                 [
@@ -169,7 +184,8 @@ describe("parsing", () => {
                         output: "currency",
                         mantissa: 2,
                         spaceSeparated: true,
-                        optionalMantissa: true
+                        optionalMantissa: true,
+                        optionalCharacteristic: true
                     }
                 ],
                 [
@@ -179,7 +195,8 @@ describe("parsing", () => {
                         output: "currency",
                         totalLength: 4,
                         spaceSeparated: true,
-                        optionalMantissa: false
+                        optionalMantissa: false,
+                        optionalCharacteristic: true
                     }
                 ],
                 [
@@ -210,6 +227,37 @@ describe("parsing", () => {
                         output: "currency",
                         negative: "sign",
                         forceSign: true
+                    }
+                ],
+                [
+                    ".",
+                    {
+                        optionalCharacteristic: true,
+                        optionalMantissa: false
+                    }
+                ],
+                [
+                    "K",
+                    {
+                        forceAverage: "thousand"
+                    }
+                ],
+                [
+                    "M",
+                    {
+                        forceAverage: "million"
+                    }
+                ],
+                [
+                    "B",
+                    {
+                        forceAverage: "billion"
+                    }
+                ],
+                [
+                    "T",
+                    {
+                        forceAverage: "trillion"
                     }
                 ]
             ];

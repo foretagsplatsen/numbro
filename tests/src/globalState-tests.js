@@ -24,6 +24,7 @@ const rewire = require("rewire");
 const globalState = rewire("../../src/globalState");
 
 const validating = require("../../src/validating");
+const parsing = require("../../src/parsing");
 const enUS = require("../../src/en-US");
 
 describe("globalState-tests", () => {
@@ -150,7 +151,9 @@ describe("globalState-tests", () => {
 
             let result = globalState.currentOrdinalDefaults();
             expect(result).not.toBe(ordinalDefaults); // returns a copy
-            expect(result).toEqual(Object.assign({}, ordinalDefaults));
+            Object.keys(ordinalDefaults).forEach((key) => {
+                expect(result[key]).toBeDefined();
+            });
         });
 
         it("combines ordinal defaults with defaults", () => {
@@ -183,7 +186,9 @@ describe("globalState-tests", () => {
 
             let result = globalState.currentByteDefaults();
             expect(result).not.toBe(byteDefaults); // returns a copy
-            expect(result).toEqual(Object.assign({}, byteDefaults));
+            Object.keys(byteDefaults).forEach((key) => {
+                expect(result[key]).toBeDefined();
+            });
         });
 
         it("combines byte defaults with defaults", () => {
@@ -216,7 +221,9 @@ describe("globalState-tests", () => {
 
             let result = globalState.currentPercentageDefaults();
             expect(result).not.toBe(percentageDefaults); // returns a copy
-            expect(result).toEqual(Object.assign({}, percentageDefaults));
+            Object.keys(percentageDefaults).forEach((key) => {
+                expect(result[key]).toBeDefined();
+            });
         });
 
         it("combines percentage defaults with defaults", () => {
@@ -249,7 +256,9 @@ describe("globalState-tests", () => {
 
             let result = globalState.currentCurrencyDefaults();
             expect(result).not.toBe(currencyDefaults); // returns a copy
-            expect(result).toEqual(Object.assign({}, currencyDefaults));
+            Object.keys(currencyDefaults).forEach((key) => {
+                expect(result[key]).toBeDefined();
+            });
         });
 
         it("combines currency defaults with defaults", () => {
@@ -260,6 +269,61 @@ describe("globalState-tests", () => {
 
             let result = globalState.currentCurrencyDefaults();
             expect(result).toEqual({foo: 2, bar: 2, baz: 3});
+        });
+    });
+
+    describe("setDefaults", () => {
+        it("parses the format", () => {
+            let format = jasmine.createSpy("format");
+            spyOn(parsing, "parseFormat");
+            spyOn(validating, "validateFormat");
+
+            globalState.setDefaults(format);
+
+            expect(parsing.parseFormat).toHaveBeenCalledWith(format);
+        });
+
+        it("validates the format", () => {
+            let format = jasmine.createSpy("format");
+            let parsedFormat = jasmine.createSpy("parsedFormat");
+            spyOn(parsing, "parseFormat");
+            parsing.parseFormat.and.returnValue(parsedFormat);
+            spyOn(validating, "validateFormat");
+
+            globalState.setDefaults(format);
+
+            expect(validating.validateFormat).toHaveBeenCalledWith(parsedFormat);
+        });
+
+        it("doesn't change the format when its invalid", () => {
+            let format = jasmine.createSpy("format");
+            spyOn(parsing, "parseFormat");
+            spyOn(validating, "validateFormat");
+            validating.validateFormat.and.returnValue(false);
+
+            let oldDefaults = globalState.currentDefaults();
+
+            globalState.setDefaults(format);
+
+            let newDefaults = globalState.currentDefaults();
+
+            expect(newDefaults).toEqual(oldDefaults);
+        });
+
+        it("changes the format when its valid", () => {
+            let format = jasmine.createSpy("format");
+            spyOn(parsing, "parseFormat");
+            spyOn(validating, "validateFormat");
+            parsing.parseFormat.and.returnValue(format);
+            validating.validateFormat.and.returnValue(true);
+
+            let oldDefaults = globalState.currentDefaults();
+
+            globalState.setDefaults(format);
+
+            let newDefaults = globalState.currentDefaults();
+
+            expect(newDefaults).not.toEqual(oldDefaults);
         });
     });
 

@@ -126,11 +126,30 @@ function parseAverage(string, result) {
     }
 }
 
+function parseForceAverage(string, result) {
+    if (string.indexOf("K") !== -1) {
+        result.forceAverage = "thousand";
+    } else if (string.indexOf("M") !== -1) {
+        result.forceAverage = "million";
+    } else if (string.indexOf("B") !== -1) {
+        result.forceAverage = "billion";
+    } else if (string.indexOf("T") !== -1) {
+        result.forceAverage = "trillion";
+    }
+}
+
 function parseOptionalMantissa(string, result) {
     if (string.match(/\[\.]/)) {
         result.optionalMantissa = true;
     } else if (string.match(/\./)) {
         result.optionalMantissa = false;
+    }
+}
+
+function parseOptionalCharacteristic(string, result) {
+    if (string.indexOf(".") !== -1) {
+        let characteristic = string.split(".")[0];
+        result.optionalCharacteristic = characteristic.indexOf("0") === -1;
     }
 }
 
@@ -150,12 +169,18 @@ function parseForceSign(string, result) {
 }
 
 function parseFormat(string, result = {}) {
+    if (typeof string !== "string") {
+        return string;
+    }
+
     string = parsePrefix(string, result);
     string = parsePostfix(string, result);
     parseOutput(string, result);
     parseTotalLength(string, result);
     parseCharacteristic(string, result);
+    parseOptionalCharacteristic(string, result);
     parseAverage(string, result);
+    parseForceAverage(string, result);
     parseMantissa(string, result);
     parseOptionalMantissa(string, result);
     parseThousandSeparated(string, result);

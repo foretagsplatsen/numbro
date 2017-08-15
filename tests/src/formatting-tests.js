@@ -33,6 +33,83 @@ const formatting = formattingModule(numbroStub);
 const globalState = require("../../src/globalState");
 
 describe("formatting", () => {
+    describe("zeroes", () => {
+        let zeroes = undefined;
+
+        beforeEach(() => {
+            zeroes = formattingModule.__get__("zeroes");
+        });
+
+        it("produces zeroes", () => {
+            let result = zeroes(5);
+            expect(result).toBe("00000");
+        });
+    });
+
+    describe("toFixed", () => {
+        let toFixed = undefined;
+        let toFixedLarge = undefined;
+        let revert = undefined;
+
+        beforeEach(() => {
+            toFixedLarge = jasmine.createSpy("toFixedLarge");
+            toFixed = formattingModule.__get__("toFixed");
+            revert = formattingModule.__set__({toFixedLarge});
+        });
+
+        afterEach(() => {
+            revert();
+        });
+
+        it("works", () => {
+            let data = [
+                [123.454, 2, "123.45"],
+                [123.456, 2, "123.46"],
+                [0.0001, 3, "0.000"],
+                [0.0001, 4, "0.0001"],
+                [0.0001, 5, "0.00010"],
+                [4.0001, 0, "4"]
+            ];
+
+            data.forEach(([value, precision, expectedOutput]) => {
+                let result = toFixed(value, precision);
+                expect(result).toBe(expectedOutput);
+            });
+        });
+
+        it("delegates to `toFixedLarge` when number representation requires an exponent", () => {
+            toFixed(1e+23, 2);
+            expect(toFixedLarge).toHaveBeenCalledWith(1e+23, 2);
+        });
+    });
+
+    describe("toFixedLarge", () => {
+        let toFixedLarge = undefined;
+
+        beforeEach(() => {
+            toFixedLarge = formattingModule.__get__("toFixedLarge");
+        });
+
+        it("works", () => {
+            let data = [
+                [1e+23, 2, "100000000000000000000000.00"],
+                [-1e+23, 2, "-100000000000000000000000.00"],
+                [1e-12, 2, "0.00"],
+                [1e-23, 24, "0.000000000000000000000010"],
+                [-1e-23, 24, "-0.000000000000000000000010"]
+                // [0.0001, 3, "0.000"],
+                // [0.0001, 4, "0.0001"],
+                // [0.0001, 5, "0.00010"],
+                // [4.0001, 0, "4"]
+            ];
+
+            data.forEach(([value, precision, expectedOutput]) => {
+                let result = toFixedLarge(value, precision);
+                expect(result).toBe(expectedOutput);
+            });
+        });
+    });
+
     describe("format", () => {
         let revert = undefined;
         let formatNumbro = undefined;
@@ -229,7 +306,11 @@ describe("formatting", () => {
 
             formatNumbro(instance, providedFormat, numbroStub);
 
-            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, globalState, numbroStub);
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: instance,
+                providedFormat,
+                numbro: numbroStub
+            });
         });
 
         it("default to number", () => {
@@ -239,7 +320,11 @@ describe("formatting", () => {
 
             formatNumbro(instance, providedFormat, numbroStub);
 
-            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, globalState, numbroStub);
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: instance,
+                providedFormat,
+                numbro: numbroStub
+            });
         });
     });
 
@@ -280,7 +365,12 @@ describe("formatting", () => {
 
                 formatByte(n, format, state, numbroStub);
 
-                expect(formatNumber).toHaveBeenCalledWith(jasmine.anything(), format, state, undefined, state.currentByteDefaults());
+                expect(formatNumber).toHaveBeenCalledWith({
+                    number: jasmine.anything(),
+                    providedFormat: format,
+                    state,
+                    defaults: state.currentByteDefaults()
+                });
             });
 
             it("calls getFormatByteUnits with the byte suffixes when the base is `general`", () => {
@@ -587,7 +677,12 @@ describe("formatting", () => {
 
             formatOrdinal(instance, providedFormat, state, numbroStub);
 
-            expect(formatNumber).toHaveBeenCalledWith(jasmine.anything(), providedFormat, state, undefined, state.currentOrdinalDefaults());
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: jasmine.anything(),
+                providedFormat,
+                state,
+                defaults: state.currentOrdinalDefaults()
+            });
         });
 
         it("calls the ordinal function with the provided value", () => {
@@ -606,14 +701,14 @@ describe("formatting", () => {
             expect(ordinalFn).toHaveBeenCalledWith(value);
         });
 
-        it("separates the suffix with a space when `spaced` flag is true", () => {
+        it("separates the suffix with a space when `spaceSeparated` flag is true", () => {
             let value = jasmine.createSpy("value");
             let providedFormat = jasmine.createSpy("providedFormat");
             let ordinalFn = jasmine.createSpy("ordinalFn").and.returnValue("nd");
 
             let state = jasmine.createSpyObj("state", ["currentOrdinal", "currentAbbreviations", "currentOrdinalDefaults"]);
             state.currentOrdinal.and.returnValue(ordinalFn);
-            state.currentAbbreviations.and.returnValue({spaced: true});
+            providedFormat.spaceSeparated = true;
 
             formatNumber.and.returnValue("2");
 
@@ -706,7 +801,12 @@ describe("formatting", () => {
 
             formatPercentage(instance, providedFormat, state, numbroStub);
 
-            expect(formatNumber).toHaveBeenCalledWith(jasmine.anything(), providedFormat, state, undefined, state.currentPercentageDefaults());
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: jasmine.anything(),
+                providedFormat,
+                state,
+                defaults: state.currentPercentageDefaults()
+            });
         });
 
         it("separates the percent sign with a space when `spaced` flag is true", () => {
@@ -714,7 +814,7 @@ describe("formatting", () => {
             let providedFormat = jasmine.createSpy("providedFormat");
             let instance = numbroStub(value);
             let state = jasmine.createSpyObj("state", ["currentAbbreviations", "currentPercentageDefaults"]);
-            state.currentAbbreviations.and.returnValue({spaced: true});
+            providedFormat.spaceSeparated = true;
 
             let result = formatPercentage(instance, providedFormat, state, numbroStub);
 
@@ -771,7 +871,13 @@ describe("formatting", () => {
             });
             formatCurrency(instance, providedFormat, state);
 
-            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, state, "foo", state.currentCurrencyDefaults());
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: jasmine.anything(),
+                providedFormat,
+                state,
+                decimalSeparator: "foo",
+                defaults: state.currentCurrencyDefaults()
+            });
         });
 
         it("adds a space before and after the decimal separator when `infix`", () => {
@@ -780,12 +886,19 @@ describe("formatting", () => {
             let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
             state.currentCurrency.and.returnValue({
                 position: "infix",
-                spaceSeparated: true,
                 symbol: "foo"
             });
+
+            providedFormat.spaceSeparated = true;
             formatCurrency(instance, providedFormat, state);
 
-            expect(formatNumber).toHaveBeenCalledWith(instance, providedFormat, state, " foo ", state.currentCurrencyDefaults());
+            expect(formatNumber).toHaveBeenCalledWith({
+                number: jasmine.anything(),
+                providedFormat,
+                state,
+                decimalSeparator: " foo ",
+                defaults: state.currentCurrencyDefaults()
+            });
         });
 
         it("adds the currency symbol afterward when `prefix`", () => {
@@ -809,9 +922,9 @@ describe("formatting", () => {
             let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
             state.currentCurrency.and.returnValue({
                 position: "prefix",
-                spaceSeparated: true,
                 symbol: "foo"
             });
+            providedFormat.spaceSeparated = true;
             formatNumber.and.returnValue("output");
 
             let result = formatCurrency(instance, providedFormat, state);
@@ -839,9 +952,9 @@ describe("formatting", () => {
             let state = jasmine.createSpyObj("state", ["currentCurrencyDefaults", "currentCurrency"]);
             state.currentCurrency.and.returnValue({
                 position: "postfix",
-                spaceSeparated: true,
                 symbol: "foo"
             });
+            providedFormat.spaceSeparated = true;
             formatNumber.and.returnValue("output");
 
             let result = formatCurrency(instance, providedFormat, state);
@@ -1656,13 +1769,10 @@ describe("formatting", () => {
         });
 
         it("returns the value if the precision is `-1`", () => {
-            let string = jasmine.createSpy("string");
-            let value = jasmine.createSpyObj("value", ["toString"]);
-            value.toString.and.returnValue(string);
+            let value = jasmine.createSpy("value");
+            let result = setMantissaPrecision(value, value, undefined, -1);
 
-            let result = setMantissaPrecision(value, undefined, -1);
-
-            expect(result).toBe(string);
+            expect(result).toBe(value);
         });
 
         it("gives the correct mantissa length", () => {
@@ -1673,14 +1783,14 @@ describe("formatting", () => {
                 [12, 3, "12.000"],
                 [12.345, 0, "12"],
                 [12.345, 1, "12.3"],
-                [12.345, 2, "12.34"],
+                [12.345, 2, "12.35"],
                 [12.345, 3, "12.345"],
                 [12.345, 4, "12.3450"],
                 [12.345, 5, "12.34500"]
             ];
 
             data.forEach(([value, precision, expectedResult]) => {
-                let result = setMantissaPrecision(value, undefined, precision);
+                let result = setMantissaPrecision(value, value, undefined, precision);
                 expect(result).toBe(expectedResult);
             });
         });
@@ -1693,14 +1803,14 @@ describe("formatting", () => {
                 [12, 3, "12"],
                 [12.345, 0, "12"],
                 [12.345, 1, "12.3"],
-                [12.345, 2, "12.34"],
+                [12.345, 2, "12.35"],
                 [12.345, 3, "12.345"],
                 [12.345, 4, "12.3450"],
                 [12.345, 5, "12.34500"]
             ];
 
             data.forEach(([value, precision, expectedResult]) => {
-                let result = setMantissaPrecision(value, true, precision);
+                let result = setMantissaPrecision(value, value, true, precision);
                 expect(result).toBe(expectedResult);
             });
         });
@@ -1728,7 +1838,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, precision, expectedResult]) => {
-                let result = setCharacteristicPrecision(value, precision);
+                let result = setCharacteristicPrecision(value, value, false, precision);
                 expect(result).toBe(expectedResult);
             });
         });
@@ -1797,11 +1907,12 @@ describe("formatting", () => {
                 ["123456.00", {thousandSeparated: false}, "T", "123456T00"],
                 ["123456789.00", {thousandSeparated: false}, "T", "123456789T00"],
                 ["123456.00", {thousandSeparated: true}, "T", "123,456T00"],
-                ["123456789.00", {thousandSeparated: true}, "T", "123,456,789T00"]
+                ["123456789.00", {thousandSeparated: true}, "T", "123,456,789T00"],
+                ["-123456789.00", {thousandSeparated: true}, ".", "-123,456,789.00"]
             ];
 
             data.forEach(([input, {thousandSeparated}, decimalSeparator, expectedValue]) => {
-                let result = replaceDelimiters(input, thousandSeparated, state, decimalSeparator);
+                let result = replaceDelimiters(input, parseInt(input, 10), thousandSeparated, state, decimalSeparator);
                 expect(result).toBe(expectedValue);
             });
         });
@@ -1819,7 +1930,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([input, {thousandSeparated}, decimalSeparator, expectedValue]) => {
-                let result = replaceDelimiters(input, thousandSeparated, state, decimalSeparator);
+                let result = replaceDelimiters(input, parseInt(input, 10), thousandSeparated, state, decimalSeparator);
                 expect(result).toBe(expectedValue);
             });
         });
@@ -1837,7 +1948,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([input, expectedValue]) => {
-                let result = replaceDelimiters(input, false, state);
+                let result = replaceDelimiters(input, parseInt(input, 10), false, state);
                 expect(result).toBe(expectedValue);
             });
         });
@@ -1871,21 +1982,25 @@ describe("formatting", () => {
             expect(result).toBe("+foo");
         });
 
-        it("appends `+` to 0", () => {
+        it("doesn't append `+` to 0", () => {
             let result = insertSign("foo", 0);
-            expect(result).toBe("+foo");
+            expect(result).toBe("foo");
+        });
+
+        it("removes the sign for small number that output as 0", () => {
+            let result = insertSign("0.00", -0.0000001);
+            expect(result).toBe("0.00");
         });
 
         // We assume the minus sign comes from the fact that the value is negative. Might be a bit too naïve.
         it("does nothing to negative value with `sign` flag", () => {
-            let result = insertSign("foo", -4, "sign");
-            expect(result).toBe("foo");
+            let result = insertSign("-foo", -4, "sign");
+            expect(result).toBe("-foo");
         });
 
-        // Remove first character assuming it's a `-`
         it("add parenthesis to negative value with `parenthesis` flag", () => {
-            let result = insertSign("foo", -4, "parenthesis");
-            expect(result).toBe("(oo)");
+            let result = insertSign("-foo", -4, "parenthesis");
+            expect(result).toBe("(foo)");
         });
     });
 
@@ -1966,7 +2081,12 @@ describe("formatting", () => {
             state.hasZeroFormat.and.returnValue(true);
             state.getZeroFormat.and.returnValue(zeroFormat);
 
-            let result = formatNumber(instance, format, state, undefined, defaults);
+            let result = formatNumber({
+                number: instance,
+                providedFormat: format,
+                state,
+                defaults
+            });
             expect(result).toBe(zeroFormat);
         });
 
@@ -1975,13 +2095,28 @@ describe("formatting", () => {
             let defaults = jasmine.createSpy("defaults");
             let state = jasmine.createSpyObj("state", ["hasZeroFormat"]);
 
-            let result = formatNumber(numbroStub(NaN), format, state, undefined, defaults);
+            let result = formatNumber({
+                number: numbroStub(NaN),
+                providedFormat: format,
+                state,
+                defaults
+            });
             expect(result).toBe("NaN");
 
-            result = formatNumber(numbroStub(Infinity), format, state, undefined, defaults);
+            result = formatNumber({
+                number: numbroStub(Infinity),
+                providedFormat: format,
+                state,
+                defaults
+            });
             expect(result).toBe("Infinity");
 
-            result = formatNumber(numbroStub(-Infinity), format, state, undefined, defaults);
+            result = formatNumber({
+                number: numbroStub(-Infinity),
+                providedFormat: format,
+                state,
+                defaults
+            });
             expect(result).toBe("-Infinity");
         });
 
@@ -1990,10 +2125,17 @@ describe("formatting", () => {
             let defaults = jasmine.createSpy("defaults");
             let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentAbbreviations"]);
             state.currentDelimiters.and.returnValue({});
+            computeAverage.and.returnValue({value: 0});
+
             format.average = false;
             format.totalLength = 3;
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
             expect(computeAverage).toHaveBeenCalled();
             expect(insertAbbreviation).toHaveBeenCalled();
@@ -2004,9 +2146,16 @@ describe("formatting", () => {
             let defaults = jasmine.createSpy("defaults");
             let state = jasmine.createSpyObj("state", ["hasZeroFormat", "currentDelimiters", "currentAbbreviations"]);
             state.currentDelimiters.and.returnValue({});
+            computeAverage.and.returnValue({value: 0});
+
             format.average = true;
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
             expect(computeAverage).toHaveBeenCalled();
             expect(insertAbbreviation).toHaveBeenCalled();
@@ -2019,7 +2168,7 @@ describe("formatting", () => {
             state.currentDelimiters.and.returnValue({});
             format.average = undefined;
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({number: numbroStub(1), format, state, defaults});
 
             expect(computeAverage).not.toHaveBeenCalled();
             expect(insertAbbreviation).not.toHaveBeenCalled();
@@ -2034,10 +2183,15 @@ describe("formatting", () => {
             format.mantissa = jasmine.createSpy("mantissa");
             format.optionalMantissa = jasmine.createSpy("optionalMantissa");
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
-            expect(setMantissaPrecision.calls.argsFor(0)[1]).toBe(format.optionalMantissa);
-            expect(setMantissaPrecision.calls.argsFor(0)[2]).toBe(format.mantissa);
+            expect(setMantissaPrecision.calls.argsFor(0)[2]).toBe(format.optionalMantissa);
+            expect(setMantissaPrecision.calls.argsFor(0)[3]).toBe(format.mantissa);
         });
 
         it("set setCharacteristicPrecision according to `characteristic`", () => {
@@ -2047,10 +2201,17 @@ describe("formatting", () => {
             state.currentDelimiters.and.returnValue({});
 
             format.characteristic = jasmine.createSpy("characteristic");
+            format.optionalCharacteristic = jasmine.createSpy("optionalCharacteristic");
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
-            expect(setCharacteristicPrecision.calls.argsFor(0)[1]).toBe(format.characteristic);
+            expect(setCharacteristicPrecision.calls.argsFor(0)[2]).toBe(format.optionalCharacteristic);
+            expect(setCharacteristicPrecision.calls.argsFor(0)[3]).toBe(format.characteristic);
         });
 
         it("replaces the delimiters ", () => {
@@ -2062,10 +2223,16 @@ describe("formatting", () => {
             format.thousandSeparated = jasmine.createSpy("thousandSeparated");
             let decimalSeparator = jasmine.createSpy("characteristic");
 
-            formatNumber(numbroStub(1), format, state, decimalSeparator, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                decimalSeparator,
+                defaults
+            });
 
-            expect(replaceDelimiters.calls.argsFor(0)[1]).toBe(format.thousandSeparated);
-            expect(replaceDelimiters.calls.argsFor(0)[3]).toBe(decimalSeparator);
+            expect(replaceDelimiters.calls.argsFor(0)[2]).toBe(format.thousandSeparated);
+            expect(replaceDelimiters.calls.argsFor(0)[4]).toBe(decimalSeparator);
         });
 
         it("inserts the sign for negative values", () => {
@@ -2076,7 +2243,12 @@ describe("formatting", () => {
 
             format.negative = jasmine.createSpy("negative");
 
-            formatNumber(numbroStub(-1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(-1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
             expect(insertSign.calls.argsFor(0)[2]).toBe(format.negative);
         });
@@ -2089,7 +2261,12 @@ describe("formatting", () => {
 
             format.negative = jasmine.createSpy("negative");
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
             expect(insertSign).not.toHaveBeenCalled();
         });
@@ -2102,7 +2279,11 @@ describe("formatting", () => {
 
             format.negative = jasmine.createSpy("negative");
 
-            formatNumber(numbroStub(1), format, state, undefined, undefined);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state
+            });
 
             expect(state.currentDefaults).toHaveBeenCalled();
         });
@@ -2116,7 +2297,12 @@ describe("formatting", () => {
 
             format.negative = jasmine.createSpy("negative");
 
-            formatNumber(numbroStub(1), format, state, undefined, defaults);
+            formatNumber({
+                number: numbroStub(1),
+                providedFormat: format,
+                state,
+                defaults
+            });
 
             expect(state.currentDefaults).not.toHaveBeenCalled();
         });
@@ -2169,13 +2355,218 @@ describe("formatting", () => {
                         undefined
                     ],
                     "12.00"
+                ],
+                [
+                    [
+                        0.12,
+                        {
+                            optionalCharacteristic: true
+                        },
+                        globalState,
+                        undefined,
+                        undefined
+                    ],
+                    ".12"
+                ],
+                [
+                    [
+                        0, {
+                        optionalCharacteristic: true,
+                        optionalMantissa: true
+                    },
+                        globalState,
+                        undefined,
+                        undefined
+                    ]
+                    , ""
+                ],
+                [
+                    [
+                        1e-5, {
+                        optionalCharacteristic: false,
+                        optionalMantissa: true,
+                        mantissa: 1
+                    },
+                        globalState,
+                        undefined,
+                        undefined
+                    ]
+                    , "0"
                 ]
             ];
 
             data.forEach(([[value, format, state, decimalSeparator, defaults], expectedResult]) => {
-                let result = formatNumber(numbroStub(value), format, state, decimalSeparator, defaults);
+                let result = formatNumber({
+                    number: numbroStub(value),
+                    providedFormat: format,
+                    state,
+                    decimalSeparator,
+                    defaults
+                });
                 expect(result).toBe(expectedResult);
             });
         });
     });
+});
+
+describe("regression tests", () => {
+    // describe("compatible with version 1", () => {
+    //     it("uses defaults", () => {
+    //         globalState.setDefaults({thousandSeparated: true});
+    //         let result = formatting.format(numbroStub(10000));
+    //         expect(result).toBe("10,000");
+    //         globalState.setDefaults({});
+    //     });
+    //
+    //     it("keeps value through formatting", () => {
+    //         let data = [
+    //             "0,0.00",
+    //             "$0,0.00",
+    //             "0b",
+    //             "0,0%",
+    //             "00:00:00"
+    //         ];
+    //         let value = 12345.6;
+    //
+    //         data.forEach((each) => {
+    //             let n = numbroStub(value);
+    //             formatting.format(n, each);
+    //             expect(n._value).toBe(value);
+    //         });
+    //     });
+    //
+    //     it("formats numbers", () => {
+    //         let data = [
+    //             [0, "+0", "0"],
+    //             [10000, "0,0.0000", "10,000.0000"],
+    //             // [10000.23, "0,0", "10,000"],
+    //             [-10000, "0,0.0", "-10,000.0"],
+    //             [10000.1234, "0.000", "10000.123"],
+    //             [10000, "0[.]00", "10000"],
+    //             [10000.1, "0[.]00", "10000.10"],
+    //             [10000.123, "0[.]00", "10000.12"],
+    //             [10000.456, "0[.]00", "10000.46"],
+    //             [10000.001, "0[.]00", "10000"],
+    //             [10000.45, "0[.]00[0]", "10000.45"],
+    //             // [10000.456, "0[.]00[0]", "10000.456"],
+    //             [-10000, "(0,0.0000)", "(10,000.0000)"],
+    //             [-12300, "+0,0.0000", "-12,300.0000"],
+    //             [1230, "+0,0", "+1,230"],
+    //             // [100.78, "0", "101"],
+    //             // [100.28, "0", "100"],
+    //             [1.932, "0.0", "1.9"],
+    //             // [1.9687, "0", "2"],
+    //             [1.9687, "0.0", "2.0"],
+    //             [-0.23, ".00", "-.23"],
+    //             [-0.23, "(.00)", "(.23)"],
+    //             [0.23, "0.00000", "0.23000"],
+    //             // [0.67, "0.0[0000]", "0.67"],
+    //             [1.005, "0.00", "1.01"],
+    //             [2000000000, "0.0a", "2.0b"],
+    //             [1230974, "0.0a", "1.2m"],
+    //             [1460, "0a", "1k"],
+    //             [-104000, "0 a", "-104 k"],
+    //             [1, "0o", "1st"],
+    //             [52, "0 o", "52 nd"],
+    //             [23, "0o", "23rd"],
+    //             [100, "0o", "100th"],
+    //             [3124213.12341234, "0.*", "3124213.12341234"],
+    //             [3124213.12341234, ",0.*", "3,124,213.12341234"],
+    //
+    //             // decimal format on an integer (see issue #199)
+    //             [-40, "#.*", "-40"],
+    //
+    //             [1, "000", "001"],
+    //             [10, "000", "010"],
+    //             [100, "000", "100"],
+    //             [1000, "000", "1000"],
+    //
+    //             // specified abbreviations
+    //             [-5444333222111, "0,0 aK", "-5,444,333,222 k"],
+    //             [-5444333222111, "0,0 aM", "-5,444,333 m"],
+    //             [-5444333222111, "0,0 aB", "-5,444 b"],
+    //             [-5444333222111, "0,0 aT", "-5 t"],
+    //
+    //             //forced precision in abbreviated
+    //             // [123, "0 a", "123 "],
+    //             // [123, "1 a", "123 "],
+    //             // [123, "2 a", "123 "],
+    //             // [123, "3 a", "123 "],
+    //             // [123, "4 a", "123 "],
+    //
+    //             // [1450, "4 a", "1450 "],
+    //             // [-1450, "4 a", "-1450 "],
+    //
+    //             // [1234567, "4 a", "1235 k"],
+    //
+    //             [123456789, "0 a", "123 m"],
+    //             [123456789, "2 a", "123 m"],
+    //             [123456789, "3 a", "123 m"],
+    //             [123456789, "4 a", "123.5 m"],
+    //             [123456789, "5 a", "123.46 m"],
+    //             // [123456789, "6 a", "123457 k"],
+    //             // [123456789, "7 a", "123456.8 k"],
+    //             // [123456789, "8 a", "123456.79 k"],
+    //             // [123456789, "9 a", "123456789 "],
+    //             // [1234567891, "10 a", "1234567891 "],
+    //
+    //             [1234567, "2 a", "1.2 m"],
+    //             [1234567, "3 a", "1.23 m"],
+    //
+    //             // [0, "2a", "0"],
+    //
+    //             // [18823.85, "6 a", "18823.9 "],
+    //             // [188235.85, "6 a", "188236 "],
+    //             // [1882357.85, "6 a", "1882.36 k"],
+    //             // [18823578.85, "6 a", "18823.6 k"],
+    //             // [188235773.85, "6 a", "188236 k"],
+    //
+    //             // large numbers
+    //             [100, "0,0[.]0000", "100"],
+    //             [1e23, "0,0[.]0000", "100,000,000,000,000,000,000,000"],
+    //
+    //             [1e19, "0,0.0000", "10,000,000,000,000,000,000.0000"],
+    //             [1e20, "0,0.0000", "100,000,000,000,000,000,000.0000"],
+    //             [1e21, "0,0.0000", "1,000,000,000,000,000,000,000.0000"],
+    //             [1e22, "0,0.0000", "10,000,000,000,000,000,000,000.0000"],
+    //             [1e23, "0,0.0000", "100,000,000,000,000,000,000,000.0000"],
+    //
+    //             [-1e19, "0,0.0000", "-10,000,000,000,000,000,000.0000"],
+    //             [-1e20, "0,0.0000", "-100,000,000,000,000,000,000.0000"],
+    //             [-1e21, "0,0.0000", "-1,000,000,000,000,000,000,000.0000"],
+    //             [-1e22, "0,0.0000", "-10,000,000,000,000,000,000,000.0000"],
+    //             [-1e23, "0,0.0000", "-100,000,000,000,000,000,000,000.0000"],
+    //
+    //             [1.1e23, "0,0.0000", "110,000,000,000,000,000,000,000.0000"],
+    //             [1.11e23, "0,0.0000", "111,000,000,000,000,000,000,000.0000"],
+    //             [1.111e23, "0,0.0000", "111,100,000,000,000,000,000,000.0000"],
+    //
+    //             // small numbers - see issue #145
+    //             // [1e-5, "0", "0"], -> [1e-5, "0[.]0", "0"],
+    //             [1e-5, "0.0", "0.0"],
+    //             [1e-5, "0.00000", "0.00001"],
+    //             [1e-5, "0.00000000", "0.00001000"],
+    //             [1e-23, "0.0", "0.0"],
+    //             [1e-23, "0.000", "0.000"],
+    //             [1e-23, "0.00000000000000000000000", "0.00000000000000000000001"],
+    //             [1.1e-23, "0.000000000000000000000000", "0.000000000000000000000011"],
+    //             [-0.001, "0.00", "0.00"],
+    //             [-0.001, "0.000", "-0.001"],
+    //             [-1e-5, "0.00", "0.00"],
+    //             [-1e-23, "0.0000000000000000000000", "0.0000000000000000000000"],
+    //             [-1e-23, "0.00000000000000000000000", "-0.00000000000000000000001"],
+    //             [-1.1e-23, "0.000000000000000000000000", "-0.000000000000000000000011"],
+    //
+    //             // Non-finite numbers
+    //             [Infinity, "0.0", "Infinity"],
+    //             [-Infinity, "0.0", "-Infinity"],
+    //             [NaN, "0.0", "NaN"]
+    //         ];
+    //
+    //         data.forEach(([value, format, expectedOutput]) => {
+    //             let result = formatting.format(numbroStub(value), format);
+    //             expect(result).toBe(expectedOutput);
+    //         });
+    //     });
+    // });
 });

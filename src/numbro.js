@@ -47,12 +47,10 @@ function numbro(input) {
     return new Numbro(normalizeInput(input));
 }
 
-// version number
 numbro.version = VERSION;
 
-// compare numbro object
-numbro.isNumbro = function(obj) {
-    return obj instanceof Numbro;
+numbro.isNumbro = function(object) {
+    return object instanceof Numbro;
 };
 
 const globalState = require("./globalState");
@@ -99,6 +97,7 @@ numbro.languages = globalState.languages;
 numbro.languageData = globalState.languageData;
 numbro.zeroFormat = globalState.setZeroFormat;
 numbro.defaultFormat = globalState.currentDefaults;
+numbro.setDefaults = globalState.setDefaults;
 numbro.defaultCurrencyFormat = globalState.currentCurrencyDefaults;
 numbro.validate = validator.validate;
 numbro.loadLanguagesInNode = loader.loadLanguagesInNode;

@@ -22,6 +22,7 @@
 
 const enUS = require("./en-US");
 const validating = require("./validating");
+const parsing = require("./parsing");
 
 let state = {};
 
@@ -29,6 +30,8 @@ let currentLanguageTag = undefined;
 let languages = {};
 
 let zeroFormat = null;
+
+let globalDefaults = {};
 
 function chooseLanguage(tag) { currentLanguageTag = tag; }
 
@@ -50,11 +53,17 @@ state.currentOrdinal = () => currentLanguageData().ordinal;
 // Defaults
 //
 
-state.currentDefaults = () => Object.assign({}, currentLanguageData().defaults);
+state.currentDefaults = () => Object.assign({}, currentLanguageData().defaults, globalDefaults);
 state.currentOrdinalDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().ordinalDefaults);
 state.currentByteDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().byteDefaults);
 state.currentPercentageDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().percentageDefaults);
 state.currentCurrencyDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().currencyDefaults);
+state.setDefaults = (format) => {
+    format = parsing.parseFormat(format);
+    if (validating.validateFormat(format)) {
+        globalDefaults = format;
+    }
+};
 
 //
 // Zero format

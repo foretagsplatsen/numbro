@@ -82,7 +82,11 @@ function formatNumbro(n, providedFormat, numbro) {
             return formatOrdinal(n, providedFormat, globalState, numbro);
         case "number":
         default:
-            return formatNumber(n, providedFormat, globalState, numbro);
+            return formatNumber({
+                number: n,
+                providedFormat,
+                numbro
+            });
     }
 }
 
@@ -132,19 +136,29 @@ function formatByte(n, providedFormat, state, numbro) {
     let baseInfo = bytes[base];
 
     let {value, suffix} = getFormatByteUnits(n._value, baseInfo.suffixes, baseInfo.scale);
-    let output = formatNumber(numbro(value), providedFormat, state, undefined, state.currentByteDefaults());
+    let output = formatNumber({
+        number: numbro(value),
+        providedFormat,
+        state,
+        defaults: state.currentByteDefaults()
+    });
     let abbreviations = state.currentAbbreviations();
     return `${output}${abbreviations.spaced ? " " : ""}${suffix}`;
 }
 
-function formatOrdinal(n, providedFormat, state) {
+function formatOrdinal(number, providedFormat, state) {
     let ordinalFn = state.currentOrdinal();
-    let abbreviations = state.currentAbbreviations();
+    let options = Object.assign({}, defaultOptions, state.currentOrdinalDefaults(), providedFormat);
 
-    let output = formatNumber(n, providedFormat, state, undefined, state.currentOrdinalDefaults());
-    let ordinal = ordinalFn(n._value);
+    let output = formatNumber({
+        number,
+        providedFormat,
+        state,
+        defaults: state.currentOrdinalDefaults()
+    });
+    let ordinal = ordinalFn(number._value);
 
-    return `${output}${abbreviations.spaced ? " " : ""}${ordinal}`;
+    return `${output}${options.spaceSeparated ? " " : ""}${ordinal}`;
 }
 
 function formatTime(n) {
@@ -155,17 +169,23 @@ function formatTime(n) {
 }
 
 function formatPercentage(n, providedFormat, state, numbro) {
-    let output = formatNumber(numbro(n._value * 100), providedFormat, state, undefined, state.currentPercentageDefaults());
-    let abbreviations = state.currentAbbreviations();
-    return `${output}${abbreviations.spaced ? " " : ""}%`;
+    let output = formatNumber({
+        number: numbro(n._value * 100),
+        providedFormat,
+        state,
+        defaults: state.currentPercentageDefaults()
+    });
+    let options = Object.assign({}, defaultOptions, state.currentPercentageDefaults(), providedFormat);
+    return `${output}${options.spaceSeparated ? " " : ""}%`;
 }
 
-function formatCurrency(n, providedFormat, state) {
+function formatCurrency(number, providedFormat, state) {
     const currentCurrency = state.currentCurrency();
+    let options = Object.assign({}, defaultOptions, state.currentCurrencyDefaults(), providedFormat);
     let decimalSeparator = undefined;
     let space = "";
 
-    if (currentCurrency.spaceSeparated) {
+    if (options.spaceSeparated) {
         space = " ";
     }
 
@@ -173,7 +193,13 @@ function formatCurrency(n, providedFormat, state) {
         decimalSeparator = space + currentCurrency.symbol + space;
     }
 
-    let output = formatNumber(n, providedFormat, state, decimalSeparator, state.currentCurrencyDefaults());
+    let output = formatNumber({
+        number,
+        providedFormat,
+        state,
+        decimalSeparator,
+        defaults: state.currentCurrencyDefaults()
+    });
 
     if (currentCurrency.position === "prefix") {
         output = currentCurrency.symbol + space + output;
@@ -223,35 +249,81 @@ function computeAverage({value, forceAverage, abbreviations, spaceSeparated = fa
     return {value, abbreviation, mantissaPrecision};
 }
 
-function setMantissaPrecision(value, optionalMantissa, precision) {
-    if (precision === -1) {
-        return value.toString();
+function zeroes(number) {
+    let result = "";
+    for (let i = 0; i < number; i++) {
+        result += "0";
     }
 
-    let result = Math.floor(value * (Math.pow(10, precision))) / (Math.pow(10, precision));
-    let currentMantissa = result.toString().split(".")[1] || "";
+    return result;
+}
 
-    if (currentMantissa.length < precision) {
-        if (currentMantissa.length === 0) {
-            if (optionalMantissa) {
-                return result.toString();
-            }
+function toFixedLarge(value, precision) {
+    let result = value.toString();
 
-            result += ".";
+    let [base, exp] = result.split("e");
+
+    let [characteristic, mantissa = ""] = base.split(".");
+
+    if (+exp > 0) {
+        result = characteristic + mantissa + zeroes(exp - mantissa.length);
+    } else {
+        let prefix = ".";
+
+        if (+characteristic < 0) {
+            prefix = `-0${prefix}`;
+        } else {
+            prefix = `0${prefix}`;
         }
 
-        let missingZeros = precision - currentMantissa.length;
-        for (let i = 0; i < missingZeros; i++) {
-            result += "0";
+        let suffix = (zeroes(-exp - 1) + Math.abs(characteristic) + mantissa).substr(0, precision);
+        if (suffix.length < precision) {
+            suffix += zeroes(precision - suffix.length);
         }
+        result = prefix + suffix;
+    }
+
+    if (+exp > 0 && precision > 0) {
+        result += `.${zeroes(precision)}`;
+    }
+
+    return result;
+}
+
+function toFixed(value, precision) {
+    if (value.toString().indexOf("e") !== -1) {
+        return toFixedLarge(value, precision);
+    }
+
+    return (Math.round(+`${value}e+${precision}`) / (Math.pow(10, precision))).toFixed(precision);
+}
+
+function setMantissaPrecision(output, value, optionalMantissa, precision) {
+    if (precision === -1) {
+        return output;
+    }
+
+    let result = toFixed(value, precision);
+    let [currentCharacteristic, currentMantissa = ""] = result.toString().split(".");
+
+    if (currentMantissa.match(/^0+$/) && optionalMantissa) {
+        return currentCharacteristic;
     }
 
     return result.toString();
 }
 
-function setCharacteristicPrecision(value, precision) {
-    let result = value;
-    let currentCharacteristic = result.toString().split(".")[0];
+function setCharacteristicPrecision(output, value, optionalCharacteristic, precision) {
+    let result = output;
+    let [currentCharacteristic, currentMantissa] = result.toString().split(".");
+
+    if (currentCharacteristic.match(/^-?0$/) && optionalCharacteristic) {
+        if (!currentMantissa) {
+            return currentCharacteristic.replace("0", "");
+        }
+
+        return `${currentCharacteristic.replace("0", "")}.${currentMantissa}`;
+    }
 
     if (currentCharacteristic.length < precision) {
         let missingZeros = precision - currentCharacteristic.length;
@@ -281,7 +353,7 @@ function indexesOfGroupSpaces(totalLength, groupSize) {
     return result;
 }
 
-function replaceDelimiters(output, thousandSeparated, state, decimalSeparator) {
+function replaceDelimiters(output, value, thousandSeparated, state, decimalSeparator) {
     let delimiters = state.currentDelimiters();
     let thousandSeparator = delimiters.thousands;
     decimalSeparator = decimalSeparator || delimiters.decimal;
@@ -292,10 +364,20 @@ function replaceDelimiters(output, thousandSeparated, state, decimalSeparator) {
     let mantissa = result.split(".")[1];
 
     if (thousandSeparated) {
+        if (value < 0) {
+            // Remove the minus sign
+            characteristic = characteristic.slice(1);
+        }
+
         let indexesToInsertThousandDelimiters = indexesOfGroupSpaces(characteristic.length, thousandsSize);
         indexesToInsertThousandDelimiters.forEach((position, index) => {
             characteristic = characteristic.slice(0, position + index) + thousandSeparator + characteristic.slice(position + index);
         });
+
+        if (value < 0) {
+            // Add back the minus sign
+            characteristic = `-${characteristic}`;
+        }
     }
 
     if (!mantissa) {
@@ -311,7 +393,15 @@ function insertAbbreviation(output, abbreviation) {
 }
 
 function insertSign(output, value, negative) {
-    if (value >= 0) {
+    if (value === 0) {
+        return output;
+    }
+
+    if (+output === 0) {
+        return output.replace("-", "");
+    }
+
+    if (value > 0) {
         return `+${output}`;
     }
 
@@ -319,7 +409,7 @@ function insertSign(output, value, negative) {
         return output;
     }
 
-    return `(${output.slice(1)})`;
+    return `(${output.replace("-", "")})`;
 }
 
 function insertPrefix(output, prefix) {
@@ -330,8 +420,8 @@ function insertPostfix(output, postfix) {
     return output + postfix;
 }
 
-function formatNumber(n, providedFormat, state, decimalSeparator, defaults = state.currentDefaults()) {
-    let value = n._value;
+function formatNumber({number, providedFormat, state = globalState, decimalSeparator, defaults = state.currentDefaults()}) {
+    let value = number._value;
 
     if (value === 0 && state.hasZeroFormat()) {
         return state.getZeroFormat();
@@ -345,11 +435,12 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults = sta
 
     let totalLength = options.totalLength;
     let characteristicPrecision = totalLength ? 0 : options.characteristic;
+    let optionalCharacteristic = options.optionalCharacteristic;
     let forceAverage = options.forceAverage;
-    let average = totalLength || forceAverage || options.average;
+    let average = !!totalLength || !!forceAverage || options.average;
 
     // default when averaging is to chop off decimals
-    let mantissaPrecision = totalLength ? -1 : (average ? 0 : options.mantissa);
+    let mantissaPrecision = totalLength ? -1 : (average && providedFormat.mantissa === undefined ? 0 : options.mantissa);
     let optionalMantissa = totalLength ? false : options.optionalMantissa;
     let thousandSeparated = options.thousandSeparated;
     let spaceSeparated = options.spaceSeparated;
@@ -376,9 +467,9 @@ function formatNumber(n, providedFormat, state, decimalSeparator, defaults = sta
     }
 
     // Set mantissa precision
-    let output = setCharacteristicPrecision(value, characteristicPrecision);
-    output = setMantissaPrecision(output, optionalMantissa, mantissaPrecision);
-    output = replaceDelimiters(output, thousandSeparated, state, decimalSeparator);
+    let output = setMantissaPrecision(value.toString(), value, optionalMantissa, mantissaPrecision);
+    output = setCharacteristicPrecision(output, value, optionalCharacteristic, characteristicPrecision);
+    output = replaceDelimiters(output, value, thousandSeparated, state, decimalSeparator);
 
     if (average) {
         output = insertAbbreviation(output, abbreviation);

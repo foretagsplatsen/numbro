@@ -51,10 +51,20 @@ const validAbbreviations = {
     }
 };
 
+const validBaseValues = [
+    "decimal",
+    "binary",
+    "general"
+];
+
 const validFormat = {
     output: {
         type: "string",
         validValues: validOutputValues
+    },
+    base: {
+        type: "string",
+        validValues: validBaseValues
     },
     characteristic: {
         type: "number",
@@ -79,6 +89,7 @@ const validFormat = {
         message: "value must be positive"
     },
     optionalMantissa: "boolean",
+    optionalCharacteristic: "boolean",
     thousandSeparated: "boolean",
     spaceSeparated: "boolean",
     abbreviations: validAbbreviations,
