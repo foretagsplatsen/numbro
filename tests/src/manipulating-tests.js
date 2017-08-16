@@ -24,7 +24,9 @@ const rewire = require("rewire");
 const manipulatingModule = rewire("../../src/manipulating");
 const manipulating = manipulatingModule(numbroStub);
 
-function numbroStub(value) { return {_value: value}; }
+function numbroStub(value) {
+    return {_value: value};
+}
 
 describe("manipulating", () => {
     beforeEach(() => {
@@ -220,7 +222,7 @@ describe("manipulating", () => {
     describe("set", () => {
         it("works with numbers", () => {
             let data = [
-                // [value, other, expectedOutput]
+                // [value, other]
                 [1000, 10],
                 [0.5, 3],
                 [-100, 200],
@@ -236,7 +238,7 @@ describe("manipulating", () => {
 
         it("works with numbro instances", () => {
             let data = [
-                // [value, other, expectedOutput]
+                // [value, other]
                 [1000, 10],
                 [0.5, 3],
                 [-100, 200],
@@ -248,6 +250,43 @@ describe("manipulating", () => {
                 let instance = numbroStub(value);
                 let result = manipulating.set(instance, numbroStub(other));
                 expect(result._value).toBe(other);
+            });
+        });
+    });
+
+    describe("difference", () => {
+        it("works with numbers", () => {
+            let data = [
+                // [value, other, expectedOutput]
+                [1000, 10, 990],
+                [0.5, 3, 2.5],
+                [-100, 200, 300],
+                [0.3, 0.1, 0.2]
+            ];
+
+            data.forEach(([value, other, expectedOutput]) => {
+                let instance = numbroStub(value);
+                let result = manipulating.difference(instance, other);
+                expect(result).toBe(expectedOutput);
+                expect(instance._value).not.toBe(result);
+            });
+        });
+
+        it("works with numbro instances", () => {
+            let data = [
+                // [value, other, expectedOutput]
+                [1000, 10, 990],
+                [0.5, 3, 2.5],
+                [-100, 200, 300],
+                [0.3, 0.1, 0.2]
+            ];
+
+            data.forEach(([value, other, expectedOutput]) => {
+                numbroStub.isNumbro.and.returnValue(true);
+                let instance = numbroStub(value);
+                let result = manipulating.difference(instance, numbroStub(other));
+                expect(result).toBe(expectedOutput);
+                expect(instance._value).not.toBe(result);
             });
         });
     });

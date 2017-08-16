@@ -74,9 +74,7 @@ Numbro.prototype = {
     binaryByteUnits: function() { return formatter.getBinaryByteUnit(this);},
     decimalByteUnits: function() { return formatter.getDecimalByteUnit(this);},
     byteUnits: function() { return formatter.getByteUnit(this);},
-    difference: function(other) {
-        return Math.abs(this.clone().subtract(other).value());
-    },
+    difference: function(other) { return manipulate.difference(this, other); },
     add: function(other) { return manipulate.add(this, other); },
     subtract: function(other) { return manipulate.subtract(this, other); },
     multiply: function(other) { return manipulate.multiply(this, other); },

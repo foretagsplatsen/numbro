@@ -124,10 +124,18 @@ function set (n, other, numbro) {
     return n;
 }
 
+function difference(n, other, numbro) {
+    let clone = numbro(n._value);
+    subtract(clone, other, numbro);
+
+    return Math.abs(clone._value);
+}
+
 module.exports = numbro => ({
     add: (n, other) => add(n, other, numbro),
     subtract: (n, other) => subtract(n, other, numbro),
     multiply: (n, other) => multiply(n, other, numbro),
     divide: (n, other) => divide(n, other, numbro),
-    set: (n, other) => set(n, other, numbro)
+    set: (n, other) => set(n, other, numbro),
+    difference: (n, other) => difference(n, other, numbro)
 });
