@@ -27,6 +27,9 @@ const error = 2;
 module.exports = {
     "root": true,
     "extends": "eslint:recommended",
+    "plugins": [
+        "jasmine"
+    ],
     "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module",
@@ -37,21 +40,29 @@ module.exports = {
         "jasmine": true,
         "es6": true
     },
+    // "rulesdir": ["eslint_rules"],
     "rules": {
-        "array-bracket-newline": ["error", {"multiline": true}],
-        "array-bracket-spacing": ["error", "never"],
+        "ensure-test-file": [
+            error, {
+                "source": "src/**/*.js",
+                "testFolder": "tests",
+                "testFileBuilder": (name) => `${name}-tests`
+            }
+        ],
+        "array-bracket-newline": [error, {"multiline": true}],
+        "array-bracket-spacing": [error, "never"],
         "array-callback-return": error,
         "arrow-spacing": error,
         "comma-dangle": error,
-        "comma-spacing": ["error", {"before": false, "after": true}],
+        "comma-spacing": [error, {"before": false, "after": true}],
         "consistent-return": error,
         "default-case": error,
         "eqeqeq": error,
-        "func-style": ["error", "declaration", {"allowArrowFunctions": true}],
+        "func-style": [error, "declaration", {"allowArrowFunctions": true}],
         "handle-callback-err": error,
-        "init-declarations": ["error", "always"],
-        "key-spacing": ["error", {"beforeColon": false, "afterColon": true}],
-        "keyword-spacing": ["error", {"before": true}],
+        "init-declarations": [error, "always"],
+        "key-spacing": [error, {"beforeColon": false, "afterColon": true}],
+        "keyword-spacing": [error, {"before": true}],
         "linebreak-style": [error, "unix"],
         "no-confusing-arrow": error,
         "no-else-return": error,
@@ -62,7 +73,6 @@ module.exports = {
         "no-multi-spaces": error,
         "no-sequences": error,
         "no-shadow": error,
-        "no-sync": error,
         "no-template-curly-in-string": error,
         "no-throw-literal": error,
         "no-trailing-spaces": error,

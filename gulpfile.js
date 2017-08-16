@@ -41,7 +41,7 @@ gulp.task("lint", ["lint:js"]);
 
 gulp.task("lint:js", () => {
     return gulp.src(["./src/**/*.js", "./tests/**/*.js", "./languages/**/*.js"])
-        .pipe(plugins.eslint())
+        .pipe(plugins.eslint({rulePaths: ["./eslint_rules"]}))
         .pipe(plugins.eslint.format("unix"))
         .pipe(plugins.eslint.failAfterError());
 });
