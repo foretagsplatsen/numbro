@@ -20,12 +20,28 @@
  * SOFTWARE.
  */
 
-// Todo: implement
-// eslint-disable-next-line no-unused-vars
-function loadLanguagesInNode(numbro) {
-    return true;
+/**
+ * Load languages matching TAGS. Silently pass over the failing load.
+ *
+ * We assume here that we are in a node environment, so we don't check for it.
+ * @param {[String]} tags - list of tags to load
+ * @param {Numbro} numbro - the numbro singleton
+ */
+function loadLanguagesInNode(tags, numbro) {
+    tags.forEach((tag) => {
+        let data = undefined;
+        try {
+            data = require(`../languages/${tag}`);
+        } catch (e) {
+            console.error(`Unable to load "${tag}". No matching language file found.`); // eslint-disable-line no-console
+        }
+
+        if (data) {
+            numbro.registerLanguage(data);
+        }
+    });
 }
 
 module.exports = (numbro) => ({
-    loadLanguagesInNode: () => loadLanguagesInNode(numbro)
+    loadLanguagesInNode: (tags) => loadLanguagesInNode(tags, numbro)
 });
