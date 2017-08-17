@@ -83,7 +83,6 @@ module.exports = {
         "no-with": error,
         "one-var": [error, "never"],
         "prefer-arrow-callback": error,
-        "prefer-reflect": error,
         "prefer-rest-params": error,
         "prefer-spread": error,
         "prefer-template": error,

@@ -486,6 +486,5 @@ module.exports = (numbro) => ({
     format: (...args) => format(...args, numbro),
     getByteUnit: (...args) => getByteUnit(...args, numbro),
     getBinaryByteUnit: (...args) => getBinaryByteUnit(...args, numbro),
-    getDecimalByteUnit: (...args) => getDecimalByteUnit(...args, numbro),
-    formatTime: (...args) => formatTime(...args, numbro)
+    getDecimalByteUnit: (...args) => getDecimalByteUnit(...args, numbro)
 });

@@ -761,6 +761,7 @@ describe("formatting", () => {
 
     describe("formatTime", () => {
         it("convert seconds to time", () => {
+            let formatTime = formattingModule.__get__("formatTime");
             let data = [
                 // [value, result]
                 [86400, "24:00:00"],
@@ -771,7 +772,7 @@ describe("formatting", () => {
             ];
 
             data.forEach(([value, expectedResult]) => {
-                let result = formatting.formatTime(numbroStub(value));
+                let result = formatTime(numbroStub(value));
                 expect(result).toBe(expectedResult);
             });
         });

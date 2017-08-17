@@ -33,14 +33,14 @@ function Numbro(number) {
 function normalizeInput(input) {
     let result = input;
     if (numbro.isNumbro(input)) {
-        result = input.value();
+        result = input._value;
     } else if (typeof input === "string") {
         result = numbro.unformat(input);
-    } else if (isNaN(input) || typeof input !== "number") {
+    } else if (isNaN(input)) {
         result = NaN;
     }
 
-    return Number(result);
+    return result;
 }
 
 function numbro(input) {
@@ -55,10 +55,10 @@ numbro.isNumbro = function(object) {
 
 const globalState = require("./globalState");
 const validator = require("./validating");
-const formatter = require("./formatting")(numbro);
-const manipulate = require("./manipulating")(numbro);
 const loader = require("./loading")(numbro);
 const unformatter = require("./unformatting")(numbro);
+let formatter = require("./formatting")(numbro);
+let manipulate = require("./manipulating")(numbro);
 
 Numbro.prototype = {
     clone: function() { return numbro(this._value); },
@@ -69,7 +69,7 @@ Numbro.prototype = {
     },
     formatTime: function(format = {}) {
         format.output = "time";
-        return formatter.formatTime(this, format);
+        return formatter.format(this, format);
     },
     binaryByteUnits: function() { return formatter.getBinaryByteUnit(this);},
     decimalByteUnits: function() { return formatter.getDecimalByteUnit(this);},
