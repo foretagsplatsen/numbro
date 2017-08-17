@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+let unformatter = require("./unformatting");
+
 const validOutputValues = [
     "currency",
     "percent",
@@ -151,10 +153,10 @@ function validate(input, format) {
     return validInput && isFormatValid;
 }
 
-// Todo: Implement
-// eslint-disable-next-line no-unused-vars
 function validateInput(input) {
-    return true;
+    let value = unformatter.unformat(input);
+
+    return !!value;
 }
 
 function validateSpec(toValidate, spec, prefix) {

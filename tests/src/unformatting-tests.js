@@ -21,15 +21,9 @@
  */
 
 const rewire = require("rewire");
-const unformattingModule = rewire("../../src/unformatting");
+const unformatting = rewire("../../src/unformatting");
 const enUS = require("../../src/en-US");
 const globalState = require("../../src/globalState");
-
-const unformatting = unformattingModule(numbroStub);
-
-function numbroStub(value) {
-    return {_value: value};
-}
 
 describe("unformatting", () => {
     describe("unformat", () => {
@@ -42,7 +36,7 @@ describe("unformatting", () => {
             unformatValue = jasmine.createSpy("unformatValue");
             unformatTime = jasmine.createSpy("unformatTime");
             matchesTime = jasmine.createSpy("matchesTime");
-            revert = unformattingModule.__set__({
+            revert = unformatting.__set__({
                 unformatValue,
                 unformatTime,
                 matchesTime
@@ -59,7 +53,7 @@ describe("unformatting", () => {
             unformatValue.and.returnValue(value);
 
             let result = unformatting.unformat("");
-            expect(result._value).toBe(value);
+            expect(result).toBe(value);
         });
 
         it("returns undefined if the value is undefined", () => {
@@ -82,7 +76,7 @@ describe("unformatting", () => {
         let unformatValue = undefined;
 
         beforeEach(() => {
-            unformatValue = unformattingModule.__get__("unformatValue");
+            unformatValue = unformatting.__get__("unformatValue");
         });
 
         it("unformats correctly", () => {
@@ -293,7 +287,7 @@ describe("unformatting", () => {
         let matchesTime = undefined;
 
         beforeEach(() => {
-            matchesTime = unformattingModule.__get__("matchesTime");
+            matchesTime = unformatting.__get__("matchesTime");
         });
 
         it("detects time representing strings", () => {
@@ -318,7 +312,7 @@ describe("unformatting", () => {
         let unformatTime = undefined;
 
         beforeEach(() => {
-            unformatTime = unformattingModule.__get__("unformatTime");
+            unformatTime = unformatting.__get__("unformatTime");
         });
 
         it("detects time representing strings", () => {
@@ -402,7 +396,7 @@ describe("regression tests", () => {
                 } else if (isNaN(expectedOutput)) {
                     expect(value).toBeNaN();
                 } else {
-                    expect(result._value).toBe(expectedOutput);
+                    expect(result).toBe(expectedOutput);
                 }
             });
         });

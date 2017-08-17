@@ -40,8 +40,6 @@ const allSuffixes = [
     {key: "B", factor: 1}
 ];
 
-const globalState = require("./globalState");
-
 function escapeRegExp(s) {
     return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
@@ -188,7 +186,10 @@ function unformatTime(inputString) {
     return seconds + 60 * minutes + 3600 * hours;
 }
 
-function unformat(inputString, format, numbro) {
+function unformat(inputString, format) {
+    // Avoid circular references
+    const globalState = require("./globalState");
+
     let delimiters = globalState.currentDelimiters();
     let currencySymbol = globalState.currentCurrency().symbol;
     let ordinal = globalState.currentOrdinal();
@@ -213,9 +214,9 @@ function unformat(inputString, format, numbro) {
         return undefined;
     }
 
-    return numbro(value);
+    return value;
 }
 
-module.exports = (numbro) => ({
-    unformat: (input, format) => unformat(input, format, numbro)
-});
+module.exports = {
+    unformat
+};

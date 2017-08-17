@@ -56,7 +56,7 @@ numbro.isNumbro = function(object) {
 const globalState = require("./globalState");
 const validator = require("./validating");
 const loader = require("./loading")(numbro);
-const unformatter = require("./unformatting")(numbro);
+const unformatter = require("./unformatting");
 let formatter = require("./formatting")(numbro);
 let manipulate = require("./manipulating")(numbro);
 

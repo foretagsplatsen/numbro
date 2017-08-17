@@ -22,6 +22,7 @@
 
 const rewire = require("rewire");
 const validating = rewire("../../src/validating");
+const unformatting = require("../../src/unformatting");
 
 describe("validatingSpec", () => {
     describe("validate", () => {
@@ -210,10 +211,15 @@ describe("validatingSpec", () => {
         });
     });
 
-    // Todo
     describe("validateInput", () => {
-        it("is dummy", () => {
+        it("validates anything that can be unformatted", () => {
+            spyOn(unformatting, "unformat").and.returnValue(123);
             expect(validating.validateInput()).toBeTruthy();
+        });
+
+        it("doesn't validate anything that cannot be unformatted", () => {
+            spyOn(unformatting, "unformat").and.returnValue(undefined);
+            expect(validating.validateInput()).toBeFalsy();
         });
     });
 
