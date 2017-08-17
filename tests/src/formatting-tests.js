@@ -307,7 +307,7 @@ describe("formatting", () => {
             formatNumbro(instance, providedFormat, numbroStub);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: instance,
+                instance: instance,
                 providedFormat,
                 numbro: numbroStub
             });
@@ -321,7 +321,7 @@ describe("formatting", () => {
             formatNumbro(instance, providedFormat, numbroStub);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: instance,
+                instance: instance,
                 providedFormat,
                 numbro: numbroStub
             });
@@ -366,7 +366,7 @@ describe("formatting", () => {
                 formatByte(n, format, state, numbroStub);
 
                 expect(formatNumber).toHaveBeenCalledWith({
-                    number: jasmine.anything(),
+                    instance: jasmine.anything(),
                     providedFormat: format,
                     state,
                     defaults: state.currentByteDefaults()
@@ -678,7 +678,7 @@ describe("formatting", () => {
             formatOrdinal(instance, providedFormat, state, numbroStub);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: jasmine.anything(),
+                instance: jasmine.anything(),
                 providedFormat,
                 state,
                 defaults: state.currentOrdinalDefaults()
@@ -803,7 +803,7 @@ describe("formatting", () => {
             formatPercentage(instance, providedFormat, state, numbroStub);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: jasmine.anything(),
+                instance: jasmine.anything(),
                 providedFormat,
                 state,
                 defaults: state.currentPercentageDefaults()
@@ -873,7 +873,7 @@ describe("formatting", () => {
             formatCurrency(instance, providedFormat, state);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: jasmine.anything(),
+                instance: jasmine.anything(),
                 providedFormat,
                 state,
                 decimalSeparator: "foo",
@@ -894,7 +894,7 @@ describe("formatting", () => {
             formatCurrency(instance, providedFormat, state);
 
             expect(formatNumber).toHaveBeenCalledWith({
-                number: jasmine.anything(),
+                instance: jasmine.anything(),
                 providedFormat,
                 state,
                 decimalSeparator: " foo ",
@@ -2083,7 +2083,7 @@ describe("formatting", () => {
             state.getZeroFormat.and.returnValue(zeroFormat);
 
             let result = formatNumber({
-                number: instance,
+                instance: instance,
                 providedFormat: format,
                 state,
                 defaults
@@ -2097,7 +2097,7 @@ describe("formatting", () => {
             let state = jasmine.createSpyObj("state", ["hasZeroFormat"]);
 
             let result = formatNumber({
-                number: numbroStub(NaN),
+                instance: numbroStub(NaN),
                 providedFormat: format,
                 state,
                 defaults
@@ -2105,7 +2105,7 @@ describe("formatting", () => {
             expect(result).toBe("NaN");
 
             result = formatNumber({
-                number: numbroStub(Infinity),
+                instance: numbroStub(Infinity),
                 providedFormat: format,
                 state,
                 defaults
@@ -2113,7 +2113,7 @@ describe("formatting", () => {
             expect(result).toBe("Infinity");
 
             result = formatNumber({
-                number: numbroStub(-Infinity),
+                instance: numbroStub(-Infinity),
                 providedFormat: format,
                 state,
                 defaults
@@ -2132,7 +2132,7 @@ describe("formatting", () => {
             format.totalLength = 3;
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2152,7 +2152,7 @@ describe("formatting", () => {
             format.average = true;
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2169,7 +2169,7 @@ describe("formatting", () => {
             state.currentDelimiters.and.returnValue({});
             format.average = undefined;
 
-            formatNumber({number: numbroStub(1), format, state, defaults});
+            formatNumber({instance: numbroStub(1), format, state, defaults});
 
             expect(computeAverage).not.toHaveBeenCalled();
             expect(insertAbbreviation).not.toHaveBeenCalled();
@@ -2185,7 +2185,7 @@ describe("formatting", () => {
             format.optionalMantissa = jasmine.createSpy("optionalMantissa");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2205,7 +2205,7 @@ describe("formatting", () => {
             format.optionalCharacteristic = jasmine.createSpy("optionalCharacteristic");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2225,7 +2225,7 @@ describe("formatting", () => {
             let decimalSeparator = jasmine.createSpy("characteristic");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 decimalSeparator,
@@ -2245,7 +2245,7 @@ describe("formatting", () => {
             format.negative = jasmine.createSpy("negative");
 
             formatNumber({
-                number: numbroStub(-1),
+                instance: numbroStub(-1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2263,7 +2263,7 @@ describe("formatting", () => {
             format.negative = jasmine.createSpy("negative");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2281,7 +2281,7 @@ describe("formatting", () => {
             format.negative = jasmine.createSpy("negative");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state
             });
@@ -2299,7 +2299,7 @@ describe("formatting", () => {
             format.negative = jasmine.createSpy("negative");
 
             formatNumber({
-                number: numbroStub(1),
+                instance: numbroStub(1),
                 providedFormat: format,
                 state,
                 defaults
@@ -2398,7 +2398,7 @@ describe("formatting", () => {
 
             data.forEach(([[value, format, state, decimalSeparator, defaults], expectedResult]) => {
                 let result = formatNumber({
-                    number: numbroStub(value),
+                    instance: numbroStub(value),
                     providedFormat: format,
                     state,
                     decimalSeparator,

@@ -46,9 +46,15 @@ const defaultOptions = {
 };
 
 /**
- * Entry point. We add the prefix and postfix here to ensure they are correctly placed
+ * Entry point. Format the provided INSTANCE according to the PROVIDEDFORMAT.
+ * This method ensure the prefix and postfix are added as the last step.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} [providedFormat] - specification for formatting
+ * @param numbro - the numbro singleton
+ * @return {string}
  */
-function format(n, providedFormat = {}, numbro) {
+function format(instance, providedFormat = {}, numbro) {
     if (typeof providedFormat === "string") {
         providedFormat = parsing.parseFormat(providedFormat);
     }
@@ -62,49 +68,87 @@ function format(n, providedFormat = {}, numbro) {
     let prefix = providedFormat.prefix || "";
     let postfix = providedFormat.postfix || "";
 
-    let output = formatNumbro(n, providedFormat, numbro);
+    let output = formatNumbro(instance, providedFormat, numbro);
     output = insertPrefix(output, prefix);
     output = insertPostfix(output, postfix);
     return output;
 }
 
-function formatNumbro(n, providedFormat, numbro) {
+/**
+ * Format the provided INSTANCE according to the PROVIDEDFORMAT.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} providedFormat - specification for formatting
+ * @param numbro - the numbro singleton
+ * @return {string}
+ */
+function formatNumbro(instance, providedFormat, numbro) {
     switch (providedFormat.output) {
         case "currency":
-            return formatCurrency(n, providedFormat, globalState, numbro);
+            return formatCurrency(instance, providedFormat, globalState, numbro);
         case "percent":
-            return formatPercentage(n, providedFormat, globalState, numbro);
+            return formatPercentage(instance, providedFormat, globalState, numbro);
         case "byte":
-            return formatByte(n, providedFormat, globalState, numbro);
+            return formatByte(instance, providedFormat, globalState, numbro);
         case "time":
-            return formatTime(n, providedFormat, globalState, numbro);
+            return formatTime(instance, providedFormat, globalState, numbro);
         case "ordinal":
-            return formatOrdinal(n, providedFormat, globalState, numbro);
+            return formatOrdinal(instance, providedFormat, globalState, numbro);
         case "number":
         default:
             return formatNumber({
-                number: n,
+                instance,
                 providedFormat,
                 numbro
             });
     }
 }
 
-function getDecimalByteUnit(n) {
+/**
+ * Get the decimal byte unit (MB) for the provided numbro INSTANCE.
+ * We go from one unit to another using the decimal system (1000).
+ *
+ * @param {Numbro} instance - numbro instance to compute
+ * @return {String}
+ */
+function getDecimalByteUnit(instance) {
     let data = bytes.decimal;
-    return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
+    return getFormatByteUnits(instance._value, data.suffixes, data.scale).suffix;
 }
 
-function getBinaryByteUnit(n) {
+/**
+ * Get the binary byte unit (MiB) for the provided numbro INSTANCE.
+ * We go from one unit to another using the decimal system (1024).
+ *
+ * @param {Numbro} instance - numbro instance to compute
+ * @return {String}
+ */
+function getBinaryByteUnit(instance) {
     let data = bytes.binary;
-    return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
+    return getFormatByteUnits(instance._value, data.suffixes, data.scale).suffix;
 }
 
-function getByteUnit(n) {
+/**
+ * Get the decimal byte unit (MB) for the provided numbro INSTANCE.
+ * We go from one unit to another using the decimal system (1024).
+ *
+ * @param {Numbro} instance - numbro instance to compute
+ * @return {String}
+ */
+function getByteUnit(instance) {
     let data = bytes.general;
-    return getFormatByteUnits(n._value, data.suffixes, data.scale).suffix;
+    return getFormatByteUnits(instance._value, data.suffixes, data.scale).suffix;
 }
 
+/**
+ * Return the value and the suffix computed in byte.
+ * It uses the SUFFIXES and the SCALE provided.
+ *
+ * @param {number} value - Number to format
+ * @param {[String]} suffixes - List of suffixes
+ * @param {number} scale - Number in-between two units
+ * @return {{value: Number, suffix: String}}
+ */
 function getFormatByteUnits(value, suffixes, scale) {
     let suffix = suffixes[0];
     let abs = Math.abs(value);
@@ -131,13 +175,22 @@ function getFormatByteUnits(value, suffixes, scale) {
     return {value, suffix};
 }
 
-function formatByte(n, providedFormat, state, numbro) {
+/**
+ * Format the provided INSTANCE as bytes using the PROVIDEDFORMAT, and STATE.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} providedFormat - specification for formatting
+ * @param {globalState} state - shared state of the library
+ * @param numbro - the numbro singleton
+ * @return {string}
+ */
+function formatByte(instance, providedFormat, state, numbro) {
     let base = providedFormat.base || "binary";
     let baseInfo = bytes[base];
 
-    let {value, suffix} = getFormatByteUnits(n._value, baseInfo.suffixes, baseInfo.scale);
+    let {value, suffix} = getFormatByteUnits(instance._value, baseInfo.suffixes, baseInfo.scale);
     let output = formatNumber({
-        number: numbro(value),
+        instance: numbro(value),
         providedFormat,
         state,
         defaults: state.currentByteDefaults()
@@ -146,31 +199,56 @@ function formatByte(n, providedFormat, state, numbro) {
     return `${output}${abbreviations.spaced ? " " : ""}${suffix}`;
 }
 
-function formatOrdinal(number, providedFormat, state) {
+/**
+ * Format the provided INSTANCE as an ordinal using the PROVIDEDFORMAT,
+ * and the STATE.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} providedFormat - specification for formatting
+ * @param {globalState} state - shared state of the library
+ * @return {string}
+ */
+function formatOrdinal(instance, providedFormat, state) {
     let ordinalFn = state.currentOrdinal();
     let options = Object.assign({}, defaultOptions, state.currentOrdinalDefaults(), providedFormat);
 
     let output = formatNumber({
-        number,
+        instance,
         providedFormat,
         state,
         defaults: state.currentOrdinalDefaults()
     });
-    let ordinal = ordinalFn(number._value);
+    let ordinal = ordinalFn(instance._value);
 
     return `${output}${options.spaceSeparated ? " " : ""}${ordinal}`;
 }
 
-function formatTime(n) {
-    let hours = Math.floor(n._value / 60 / 60);
-    let minutes = Math.floor((n._value - (hours * 60 * 60)) / 60);
-    let seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
+/**
+ * Format the provided INSTANCE as a time HH:MM:SS.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @return {string}
+ */
+function formatTime(instance) {
+    let hours = Math.floor(instance._value / 60 / 60);
+    let minutes = Math.floor((instance._value - (hours * 60 * 60)) / 60);
+    let seconds = Math.round(instance._value - (hours * 60 * 60) - (minutes * 60));
     return `${hours}:${(minutes < 10) ? "0" : ""}${minutes}:${(seconds < 10) ? "0" : ""}${seconds}`;
 }
 
-function formatPercentage(n, providedFormat, state, numbro) {
+/**
+ * Format the provided INSTANCE as a percentage using the PROVIDEDFORMAT,
+ * and the STATE.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} providedFormat - specification for formatting
+ * @param {globalState} state - shared state of the library
+ * @param numbro - the numbro singleton
+ * @return {string}
+ */
+function formatPercentage(instance, providedFormat, state, numbro) {
     let output = formatNumber({
-        number: numbro(n._value * 100),
+        instance: numbro(instance._value * 100),
         providedFormat,
         state,
         defaults: state.currentPercentageDefaults()
@@ -179,7 +257,16 @@ function formatPercentage(n, providedFormat, state, numbro) {
     return `${output}${options.spaceSeparated ? " " : ""}%`;
 }
 
-function formatCurrency(number, providedFormat, state) {
+/**
+ * Format the provided INSTANCE as a percentage using the PROVIDEDFORMAT,
+ * and the STATE.
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} providedFormat - specification for formatting
+ * @param {globalState} state - shared state of the library
+ * @return {string}
+ */
+function formatCurrency(instance, providedFormat, state) {
     const currentCurrency = state.currentCurrency();
     let options = Object.assign({}, defaultOptions, state.currentCurrencyDefaults(), providedFormat);
     let decimalSeparator = undefined;
@@ -194,7 +281,7 @@ function formatCurrency(number, providedFormat, state) {
     }
 
     let output = formatNumber({
-        number,
+        instance,
         providedFormat,
         state,
         decimalSeparator,
@@ -212,6 +299,17 @@ function formatCurrency(number, providedFormat, state) {
     return output;
 }
 
+/**
+ * Compute the average value out of VALUE.
+ * The other parameters are computation options.
+ *
+ * @param {number} value - value to compute
+ * @param {string} [forceAverage] - forced unit used to compute
+ * @param {{}} abbreviations - part of the language specification
+ * @param {boolean} spaceSeparated - `true` if a space must be inserted between the value and the abbreviation
+ * @param {number} [totalLength] - total length of the output including the characteristic and the mantissa
+ * @return {{value: number, abbreviation: string, mantissaPrecision: number}}
+ */
 function computeAverage({value, forceAverage, abbreviations, spaceSeparated = false, totalLength = 0}) {
     let abbreviation = "";
     let abs = Math.abs(value);
@@ -249,6 +347,12 @@ function computeAverage({value, forceAverage, abbreviations, spaceSeparated = fa
     return {value, abbreviation, mantissaPrecision};
 }
 
+/**
+ * Return a string of NUMBER zero.
+ *
+ * @param {number} number - Length of the output
+ * @return {string}
+ */
 function zeroes(number) {
     let result = "";
     for (let i = 0; i < number; i++) {
@@ -258,6 +362,14 @@ function zeroes(number) {
     return result;
 }
 
+/**
+ * Return a string representing VALUE with a PRECISION-long mantissa.
+ * This method is for large/small numbers only (a.k.a. including a "e").
+ *
+ * @param {number} value - number to precise
+ * @param {number} precision - desired length for the mantissa
+ * @return {string}
+ */
 function toFixedLarge(value, precision) {
     let result = value.toString();
 
@@ -290,6 +402,13 @@ function toFixedLarge(value, precision) {
     return result;
 }
 
+/**
+ * Return a string representing VALUE with a PRECISION-long mantissa.
+ *
+ * @param {number} value - number to precise
+ * @param {number} precision - desired length for the mantissa
+ * @return {string}
+ */
 function toFixed(value, precision) {
     if (value.toString().indexOf("e") !== -1) {
         return toFixedLarge(value, precision);
@@ -298,6 +417,15 @@ function toFixed(value, precision) {
     return (Math.round(+`${value}e+${precision}`) / (Math.pow(10, precision))).toFixed(precision);
 }
 
+/**
+ * Return the current OUTPUT with a mantissa precions of PRECISION.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {number} value - number being currently formatted
+ * @param {boolean} optionalMantissa - `true` if the mantissa is omitted when it's only zeroes
+ * @param {number} precision - desired precision of the mantissa
+ * @return {string}
+ */
 function setMantissaPrecision(output, value, optionalMantissa, precision) {
     if (precision === -1) {
         return output;
@@ -313,6 +441,15 @@ function setMantissaPrecision(output, value, optionalMantissa, precision) {
     return result.toString();
 }
 
+/**
+ * Return the current OUTPUT with a characteristic precions of PRECISION.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {number} value - number being currently formatted
+ * @param {boolean} optionalCharacteristic - `true` if the characteristic is omitted when it's only zeroes
+ * @param {number} precision - desired precision of the characteristic
+ * @return {string}
+ */
 function setCharacteristicPrecision(output, value, optionalCharacteristic, precision) {
     let result = output;
     let [currentCharacteristic, currentMantissa] = result.toString().split(".");
@@ -336,8 +473,13 @@ function setCharacteristicPrecision(output, value, optionalCharacteristic, preci
 }
 
 /**
- * Return the indexes where are the group separations after splitting `totalLength` in group of `groupSize` size.
+ * Return the indexes where are the group separations after splitting
+ * `totalLength` in group of `groupSize` size.
  * Important: we start grouping from the right hand side.
+ *
+ * @param {number} totalLength - total length of the characteristic to split
+ * @param {number} groupSize - length of each group
+ * @return {[number]}
  */
 function indexesOfGroupSpaces(totalLength, groupSize) {
     let result = [];
@@ -353,6 +495,17 @@ function indexesOfGroupSpaces(totalLength, groupSize) {
     return result;
 }
 
+/**
+ * Replace the decimal separator with DECIMALSEPARATOR and insert thousand
+ * separators.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {number} value - number being currently formatted
+ * @param {boolean} thousandSeparated - `true` if the characteristic must be separated
+ * @param {globalState} state - shared state of the library
+ * @param {string} decimalSeparator - string to use as decimal separator
+ * @return {string}
+ */
 function replaceDelimiters(output, value, thousandSeparated, state, decimalSeparator) {
     let delimiters = state.currentDelimiters();
     let thousandSeparator = delimiters.thousands;
@@ -388,10 +541,26 @@ function replaceDelimiters(output, value, thousandSeparated, state, decimalSepar
     return result;
 }
 
+/**
+ * Insert the provided ABBREVIATION at the end of OUTPUT.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {string} abbreviation - abbreviation to append
+ * @return {*}
+ */
 function insertAbbreviation(output, abbreviation) {
     return output + abbreviation;
 }
 
+/**
+ * Insert the positive/negative sign according to the NEGATIVE flag.
+ * If the value is negative but still output as 0, the negative sign is removed.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {number} value - number being currently formatted
+ * @param {string} negative - flag for the negative form ("sign" or "parenthesis")
+ * @return {*}
+ */
 function insertSign(output, value, negative) {
     if (value === 0) {
         return output;
@@ -412,16 +581,42 @@ function insertSign(output, value, negative) {
     return `(${output.replace("-", "")})`;
 }
 
+/**
+ * Insert the provided PREFIX at the start of OUTPUT.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {string} prefix - abbreviation to prepend
+ * @return {*}
+ */
 function insertPrefix(output, prefix) {
     return prefix + output;
 }
 
+/**
+ * Insert the provided POSTFIX at the end of OUTPUT.
+ *
+ * @param {string} output - output being build in the process of formatting
+ * @param {string} postfix - abbreviation to append
+ * @return {*}
+ */
 function insertPostfix(output, postfix) {
     return output + postfix;
 }
 
-function formatNumber({number, providedFormat, state = globalState, decimalSeparator, defaults = state.currentDefaults()}) {
-    let value = number._value;
+/**
+ * Format the provided INSTANCE as a number using the PROVIDEDFORMAT,
+ * and the STATE.
+ * This is the key method of the framework!
+ *
+ * @param {Numbro} instance - numbro instance to format
+ * @param {{}} [providedFormat] - specification for formatting
+ * @param {globalState} state - shared state of the library
+ * @param {string} decimalSeparator - string to use as decimal separator
+ * @param {{}} defaults - Set of default values used for formatting
+ * @return {string}
+ */
+function formatNumber({instance, providedFormat, state = globalState, decimalSeparator, defaults = state.currentDefaults()}) {
+    let value = instance._value;
 
     if (value === 0 && state.hasZeroFormat()) {
         return state.getZeroFormat();
