@@ -439,14 +439,14 @@ describe("globalState-tests", () => {
             expect(chooseLanguage).toHaveBeenCalledWith("en-US");
         });
 
-        it("fallback to `fallbackTag` when it matches a language", () => {
-            globalState.setLanguage("fr", "en-US");
-            expect(chooseLanguage).toHaveBeenCalledWith("en-US");
+        it("fallbacks to `fallbackTag` when no matching suffix is found", () => {
+            globalState.setLanguage("fr", "fallback");
+            expect(chooseLanguage).toHaveBeenCalledWith("fallback");
         });
 
-        it("fallback to `en-US` when the falbback don't match a language", () => {
-            globalState.setLanguage("fr", "en");
-            expect(chooseLanguage).toHaveBeenCalledWith("en-US");
+        it("has `en-US` as default fallback to ensure we can set a language", () => {
+            globalState.setLanguage("fr");
+            expect(chooseLanguage).toHaveBeenCalledWith(enUS.languageTag);
         });
     });
 });

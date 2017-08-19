@@ -37,27 +37,101 @@ function chooseLanguage(tag) { currentLanguageTag = tag; }
 
 function currentLanguageData() { return languages[currentLanguageTag]; }
 
+/**
+ * Return all the register languages
+ *
+ * @return {{}}
+ */
 state.languages = () => Object.assign({}, languages);
 
 //
 // Current language accessors
 //
 
+/**
+ * Return the current language tag
+ *
+ * @return {string}
+ */
 state.currentLanguage = () => currentLanguageTag;
+
+/**
+ * Return the current language currency data
+ *
+ * @return {{}}
+ */
 state.currentCurrency = () => currentLanguageData().currency;
+
+/**
+ * Return the current language abbreviations data
+ *
+ * @return {{}}
+ */
 state.currentAbbreviations = () => currentLanguageData().abbreviations;
+
+/**
+ * Return the current language delimiters data
+ *
+ * @return {{}}
+ */
 state.currentDelimiters = () => currentLanguageData().delimiters;
+
+/**
+ * Return the current language ordinal function
+ *
+ * @return {function}
+ */
 state.currentOrdinal = () => currentLanguageData().ordinal;
 
 //
 // Defaults
 //
 
+/**
+ * Return the current formatting defaults.
+ * Use first uses the current language default, then fallbacks to the globally defined defaults.
+ *
+ * @return {{}}
+ */
 state.currentDefaults = () => Object.assign({}, currentLanguageData().defaults, globalDefaults);
+
+/**
+ * Return the current ordinal specific formatting defaults.
+ * Use first uses the current language ordinal default, then fallbacks to the regular defaults.
+ *
+ * @return {{}}
+ */
 state.currentOrdinalDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().ordinalDefaults);
+
+/**
+ * Return the current byte specific formatting defaults.
+ * Use first uses the current language byte default, then fallbacks to the regular defaults.
+ *
+ * @return {{}}
+ */
 state.currentByteDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().byteDefaults);
+
+/**
+ * Return the current percentage specific formatting defaults.
+ * Use first uses the current language percentage default, then fallbacks to the regular defaults.
+ *
+ * @return {{}}
+ */
 state.currentPercentageDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().percentageDefaults);
+
+/**
+ * Return the current currency specific formatting defaults.
+ * Use first uses the current language currency default, then fallbacks to the regular defaults.
+ *
+ * @return {{}}
+ */
 state.currentCurrencyDefaults = () => Object.assign({}, state.currentDefaults(), currentLanguageData().currencyDefaults);
+
+/**
+ * Set the global formatting defaults.
+ *
+ * @param {{}|string} format - formatting options to use as defaults
+ */
 state.setDefaults = (format) => {
     format = parsing.parseFormat(format);
     if (validating.validateFormat(format)) {
@@ -69,14 +143,40 @@ state.setDefaults = (format) => {
 // Zero format
 //
 
+/**
+ * Return the format string for 0.
+ *
+ * @return {string}
+ */
 state.getZeroFormat = () => zeroFormat;
-state.setZeroFormat = (format) => zeroFormat = typeof(format) === "string" ? format : null;
+
+/**
+ * Set a STRING to output when the value is 0.
+ *
+ * @param {{}|string} string - string to set
+ */
+state.setZeroFormat = (string) => zeroFormat = typeof(string) === "string" ? string : null;
+
+/**
+ * Return true if a format for 0 has been set already.
+ *
+ * @return {boolean}
+ */
 state.hasZeroFormat = () => zeroFormat !== null;
 
 //
 // Getters/Setters
 //
 
+/**
+ * Return the language data for the provided TAG.
+ * Return the current language data if no tag is provided.
+ *
+ * Throw an error if the tag doesn't match any registered language.
+ *
+ * @param {string} [tag] - language tag of a registered language
+ * @return {{}}
+ */
 state.languageData = (tag) => {
     if (tag) {
         if (languages[tag]) {
@@ -88,6 +188,15 @@ state.languageData = (tag) => {
     return currentLanguageData();
 };
 
+/**
+ * Register the provided DATA as a language if and only if the data is valid.
+ * If the data is not valid, an error is thrown.
+ *
+ * When USELANGUAGE is true, the registered language is then used.
+ *
+ * @param {{}} data - language data to register
+ * @param {boolean} [useLanguage] - `true` if the provided data should become the current language
+ */
 state.registerLanguage = (data, useLanguage = false) => {
     if (!validating.validateLanguage(data)) {
         throw new Error("Invalid language data");
@@ -100,27 +209,33 @@ state.registerLanguage = (data, useLanguage = false) => {
     }
 };
 
+/**
+ * Set the current language according to TAG.
+ * If TAG doesn't match a registered language, another language matching
+ * the "language" part of the tag (according to BCP47: https://tools.ietf.org/rfc/bcp/bcp47.txt).
+ * If none, the FALLBACKTAG is used. If the FALLBACKTAG doesn't match a register language,
+ * `en-US` is finally used.
+ *
+ * @param tag
+ * @param fallbackTag
+ */
 state.setLanguage = (tag, fallbackTag = enUS.languageTag) => {
-    let tagToUse = tag;
-    let suffix = tag.split("-")[0];
-    let matchingLanguageTag = null;
-    if (!languages[tagToUse]) {
-        Object.keys(languages).forEach(each => {
-            if (!matchingLanguageTag && each.split("-")[0] === suffix) {
-                matchingLanguageTag = each;
-            }
+    if (!languages[tag]) {
+        let suffix = tag.split("-")[0];
+
+        let matchingLanguageTag = Object.keys(languages).find(each => {
+            return each.split("-")[0] === suffix;
         });
 
-        if (languages[matchingLanguageTag]) {
-            tagToUse = matchingLanguageTag;
-        } else if (languages[fallbackTag]) {
-            tagToUse = fallbackTag;
-        } else {
-            tagToUse = enUS.languageTag;
+        if (!languages[matchingLanguageTag]) {
+            chooseLanguage(fallbackTag);
+            return;
         }
+
+        chooseLanguage(matchingLanguageTag);
     }
 
-    chooseLanguage(tagToUse);
+    chooseLanguage(tag);
 };
 
 state.registerLanguage(enUS);
