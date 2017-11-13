@@ -1,3 +1,7 @@
+# WE HAVE MOVED!
+The project has moved to https://github.com/BenjaminVanRyseghem/numbro, we are no more accepting PRs in the current repository.
+
+
 # [numbro](https://numbrojs.com/)
 
 [![Join the chat at https://gitter.im/foretagsplatsen/numbro](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/foretagsplatsen/numbro?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
